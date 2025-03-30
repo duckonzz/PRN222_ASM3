@@ -1,0 +1,82 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using DataAccess.DTO
+@using eStore.Services.Interfaces
+@using Microsoft.AspNetCore.Http
+@inject NavigationManager Navigation
+@inject IMemberService MemberService
+@inject IHttpContextAccessor HttpContextAccessor
+
+<h3>Login</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <p class="text-danger">@ErrorMessage</p>
+}
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group mb-3">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
+        <ValidationMessage For="@(() => loginModel.Email)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="password">Password</label>
+        <InputText id="password" type="password" @bind-Value="loginModel.Password" class="form-control" />
+        <ValidationMessage For="@(() => loginModel.Password)" />
+    </div>
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">Login</button>
+    </div>
+</EditForm>
+
+@code {
+    private LoginDTO loginModel = new LoginDTO();
+
+    private string ErrorMessage = string.Empty;
+
+    // private async Task HandleLogin()
+    // {
+    //     Console.WriteLine($"Entered Email: {loginModel.Email}");
+    //     Console.WriteLine($"Entered Password: {loginModel.Password}");
+
+    //     var member = MemberService.Login(loginModel.Email, loginModel.Password);
+    //     if (member != null)
+    //     {
+    //         HttpContextAccessor.HttpContext!.Session.SetString("Email", member.Email);
+    //         Navigation.NavigateTo("/weather");
+    //     }
+    //     else
+    //     {
+    //         ErrorMessage = "Invalid email or password";
+    //     }
+    // }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            // Debug output
+            Console.WriteLine($"Attempting login with: {loginModel.Email}");
+
+            var member = await MemberService.LoginAsync(loginModel.Email, loginModel.Password);
+            if (member != null)
+            {
+                HttpContextAccessor.HttpContext?.Session.SetString("Email", member.Email);
+                Navigation.NavigateTo("/weather");
+            }
+            else
+            {
+                ErrorMessage = "Invalid email or password";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "An error occurred during login";
+            Console.WriteLine($"Login error: {ex.Message}");
+        }
+    }
+}
