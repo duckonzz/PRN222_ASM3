@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DataAccess.Entities;
+namespace BusinessObject.Entities;
 
 public partial class OrderDetail
 {
