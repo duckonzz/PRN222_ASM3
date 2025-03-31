@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DataAccess.Entities;
+using BusinessObject.Entities;
 using DataAccess.Repositories;
 
-namespace BusinessObject.Services
+
+namespace Service.Services
 {
     public class OrderDetailService : IOrderDetailService
     {

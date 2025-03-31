@@ -1,7 +1,8 @@
-﻿@page "/orders"
+﻿@page "/admin/orders"
 @using BusinessObject
-@using BusinessObject.Services
-@using DataAccess.Entities
+@using BusinessObject.Entities
+@using Service.Services
+
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
 
@@ -38,7 +39,7 @@ else
                     <td>
                         
                         <NavLink class="btn btn-sm btn-outline-danger"
-                                 href="@($"/orders/{order.OrderId}/details")">
+                                 href="@($"/admin/orders/{order.OrderId}/details")">
                             <i class="bi bi-trash"></i>View
                         </NavLink>
                       

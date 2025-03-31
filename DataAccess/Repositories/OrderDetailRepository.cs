@@ -1,5 +1,6 @@
-﻿using DataAccess.Data;
-using DataAccess.Entities;
+﻿using BusinessObject.Entities;
+using DataAccess.Data;
+
 using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DataAccess.Entities;
+using BusinessObject.Entities;
 
-namespace BusinessObject.Services
+
+namespace Service.Services
 {
     public interface IOrderService
     {

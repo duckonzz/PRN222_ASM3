@@ -1,7 +1,8 @@
-﻿@page "/orders/{OrderId:int}/details/create"
-@page "/orders/{OrderId:int}/details/edit/{ProductId:int}"
-@using BusinessObject.Services
-@using DataAccess.Entities
+﻿@page "/admin/orders/{OrderId:int}/details/create"
+@page "/admin/orders/{OrderId:int}/details/edit/{ProductId:int}"
+@using BusinessObject.Entities
+@using Service.Services
+
 @inject IOrderDetailService orderDetailService
 @inject NavigationManager Navigation
 
@@ -66,11 +67,11 @@
         {
             await orderDetailService.AddOrderDetailAsync(detail);
         }
-        Navigation.NavigateTo($"/orders/{OrderId}/details");
+        Navigation.NavigateTo($"/admin/orders/{OrderId}/details");
     }
 
     private void Cancel()
     {
-        Navigation.NavigateTo($"/orders/{OrderId}/details");
+        Navigation.NavigateTo($"/admin/orders/{OrderId}/details");
     }
 }

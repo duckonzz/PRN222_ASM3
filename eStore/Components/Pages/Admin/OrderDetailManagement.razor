@@ -1,7 +1,8 @@
 ﻿
-@page "/orders/{OrderId:int}/details"
-@using BusinessObject.Services
-@using DataAccess.Entities
+@page "/admin/orders/{OrderId:int}/details"
+@using BusinessObject.Entities
+@using Service.Services
+
 @inject IOrderService OrderService
 @inject IOrderDetailService OrderDetailService
 @inject NavigationManager Navigation
@@ -42,11 +43,11 @@ else
                     <td>@((detail.UnitPrice * detail.Quantity * (1 - (decimal)detail.Discount)).ToString("C"))</td>
                     <td>
                         <NavLink class="btn btn-sm btn-outline-primary"
-                                 href="@($"/orders/{detail.OrderId}/details/edit/{detail.ProductId}")">
+                                 href="@($"/admin/orders/{detail.OrderId}/details/edit/{detail.ProductId}")">
                             <i class="bi bi-pencil"></i> Edit
                         </NavLink>
                         <NavLink class="btn btn-sm btn-outline-danger"
-                                 href="@($"/orders/{detail.OrderId}/details/delete/{detail.ProductId}")">
+                                 href="@($"/admin/orders/{detail.OrderId}/details/delete/{detail.ProductId}")">
                             <i class="bi bi-trash"></i> Delete
                         </NavLink>
                     </td>
@@ -55,7 +56,7 @@ else
         </tbody>
     </table>
 
-    <NavLink class="btn btn-success" href="@($"/orders/{OrderId}/details/create")">
+    <NavLink class="btn btn-success" href="@($"/admin/orders/{OrderId}/details/create")">
         Add New Detail
     </NavLink>
     <NavLink class="btn btn-secondary" href="/orders">
@@ -83,12 +84,12 @@ else
 
     private void AddDetail()
     {
-        Navigation.NavigateTo($"/orders/{OrderId}/details/create");
+        Navigation.NavigateTo($"/admin/orders/{OrderId}/details/create");
     }
 
     private void EditDetail(int orderId, int productId)
     {
-        Navigation.NavigateTo($"/orders/{orderId}/details/edit/{productId}");
+        Navigation.NavigateTo($"/admin/orders/{orderId}/details/edit/{productId}");
     }
 
     private async Task DeleteDetail(int orderId, int productId)
@@ -100,6 +101,6 @@ else
 
     private void BackToOrders()
     {
-        Navigation.NavigateTo("/orders");
+        Navigation.NavigateTo("/admin/orders");
     }
 }
