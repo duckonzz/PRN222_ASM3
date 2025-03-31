@@ -1,5 +1,5 @@
-using DataAccess.DTO;
-using DataAccess.Entities;
+using BusinessObject.DTO;
+using BusinessObject.Entities;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -13,9 +13,10 @@ namespace DataAccess.Repositories.Interfaces
     {
         public Task<List<MemberDTO>> GetAllAsync();
         public Task<MemberDTO> GetByIdAsync(int id);
-        public Task<MemberDTO> LoginAsync(string email, string password, IOptions<AdminAccountSettings> adminAccountSettings);
+        public Task<MemberDTO?> LoginAsync(string email, string password, IOptions<AdminAccountSettings> adminAccountSettings);
+        public Task<bool> IsAdmin(MemberDTO member, IOptions<AdminAccountSettings> adminAccountSettings);
         public Task AddAsync(MemberDTO member);
-        public Task UpdateAsync(MemberDTO member);
+        public Task UpdateAsync(MemberUpdateDTO member);
         public Task DeleteAsync(int id);
     }
 }

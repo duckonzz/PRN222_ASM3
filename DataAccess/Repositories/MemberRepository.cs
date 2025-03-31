@@ -1,6 +1,6 @@
 using DataAccess.Data;
-using DataAccess.DTO;
-using DataAccess.Entities;
+using BusinessObject.DTO;
+using BusinessObject.Entities;
 using DataAccess.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,7 +18,7 @@ namespace DataAccess.Repositories
 
 		public async Task<List<MemberDTO>> GetAllAsync()
 		{
-            var members = await _context.Members.AsNoTracking()
+            var members = await _context.Members
 				.Include(m => m.Orders)
 				.ToListAsync();
             return members.Select(m => new MemberDTO
@@ -34,7 +34,7 @@ namespace DataAccess.Repositories
 
 		public async Task<MemberDTO> GetByIdAsync(int id)
 		{
-            var member = await _context.Members.AsNoTracking()
+            var member = await _context.Members
                 .Include(m => m.Orders)
 				.FirstOrDefaultAsync(m => m.MemberId == id);
             return new MemberDTO
@@ -66,8 +66,10 @@ namespace DataAccess.Repositories
                 };
             }
 
-            var member = await _context.Members.AsNoTracking()
+            var member = await _context.Members
                     .FirstOrDefaultAsync(m => m.Email == email && m.Password == password);
+            if (member == null)
+                return null;
             return new MemberDTO
             {
                 MemberId = member.MemberId,
@@ -77,6 +79,14 @@ namespace DataAccess.Repositories
                 Country = member.Country,
                 Password = member.Password
             };
+        }
+
+        public async Task<bool> IsAdmin(MemberDTO member, IOptions<AdminAccountSettings> adminAccountSettings)
+        {
+            var adminSettings = adminAccountSettings.Value;
+            if (member.Email == adminSettings.Email)
+                return true;
+            return false;
         }
 
         public async Task AddAsync(MemberDTO member)
@@ -90,19 +100,19 @@ namespace DataAccess.Repositories
                 CompanyName = member.CompanyName,
                 City = member.City,
                 Country = member.Country,
-                Password = member.Password // In a real app, hash this password
+                Password = member.Password
             };
 
             _context.Members.Add(newMember);
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task UpdateAsync(MemberDTO member)
+		public async Task UpdateAsync(MemberUpdateDTO member)
 		{
-            var updateMember = await _context.Members.AsNoTracking()
-                .Include(m => m.Orders)
+            var updateMember = await _context.Members
                 .FirstOrDefaultAsync(m => m.MemberId == member.MemberId);
-            if (updateMember.Email == member.Email)
+            _context.Members.Attach(updateMember);
+            if (updateMember.Email != member.Email && await _context.Members.AnyAsync(m => m.Email == member.Email))
                 throw new InvalidOperationException($"Email {member.Email} is already in use");
 
             updateMember.Email = member.Email;
@@ -120,7 +130,8 @@ namespace DataAccess.Repositories
 		public async Task DeleteAsync(int id)
 		{
 			var member = await _context.Members.FirstOrDefaultAsync(m => m.MemberId == id);
-			if (member != null)
+            _context.Members.Attach(member);
+            if (member != null)
 			{
 				_context.Members.Remove(member);
 				await _context.SaveChangesAsync();

@@ -1,5 +1,5 @@
-﻿using DataAccess.DTO;
-using DataAccess.Entities;
+﻿using BusinessObject.DTO;
+using BusinessObject.Entities;
 using DataAccess.Repositories.Interfaces;
 using eStore.Services.Interfaces;
 using Microsoft.Extensions.Options;
@@ -27,9 +27,14 @@ namespace eStore.Services
             return await _memberRepository.GetByIdAsync(id);
         }
 
-        public async Task<MemberDTO> LoginAsync(string email, string password)
+        public async Task<MemberDTO?> LoginAsync(string email, string password)
         {
             return await _memberRepository.LoginAsync(email, password, _adminAccountSettings);
+        }
+
+        public async Task<bool> IsAdmin(MemberDTO member)
+        {
+            return await _memberRepository.IsAdmin(member, _adminAccountSettings);
         }
 
         public async Task AddMemberAsync(MemberDTO member)
@@ -37,7 +42,7 @@ namespace eStore.Services
             await _memberRepository.AddAsync(member);
         }
 
-        public async Task UpdateMemberAsync(MemberDTO member)
+        public async Task UpdateMemberAsync(MemberUpdateDTO member)
         {
             await _memberRepository.UpdateAsync(member);
         }
