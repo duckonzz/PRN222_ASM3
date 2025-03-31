@@ -18,11 +18,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var conString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<eStoreDuckContext>(options =>
-{
-    options.UseSqlServer(conString);
-    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-});
+builder.Services.AddDbContext<eStoreDuckContext>(options => options.UseSqlServer(conString));
 builder.Services.Configure<AdminAccountSettings>(builder.Configuration.GetSection("AdminAccount"));
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IMemberService, MemberService>();
