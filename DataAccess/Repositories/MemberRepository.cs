@@ -48,6 +48,24 @@ namespace DataAccess.Repositories
             };
         }
 
+        public async Task<MemberDTO> GetMemberByEmailAsync(string email)
+        {
+            var member = await _context.Members
+                .FirstOrDefaultAsync(m => m.Email == email);
+
+            if (member == null)
+                throw new KeyNotFoundException($"Member with email {email} not found");
+
+            return new MemberDTO
+            {
+                MemberId = member.MemberId,
+                Email = member.Email,
+                CompanyName = member.CompanyName,
+                City = member.City,
+                Country = member.Country
+            };
+        }
+
         public async Task<MemberDTO?> LoginAsync(string email, string password, IOptions<AdminAccountSettings> adminAccountSettings)
         {
             var adminSettings = adminAccountSettings.Value;
