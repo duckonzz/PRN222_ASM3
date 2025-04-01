@@ -1,4 +1,4 @@
-﻿@page "/admin/orders/{OrderId:int}/details"
+﻿@page "/user/orders/{OrderId:int}/details"
 @using BusinessObject.Entities
 @using Service.Services
 @using Service.Services.Interfaces
@@ -6,6 +6,7 @@
 @inject IOrderService OrderService
 @inject IOrderDetailService OrderDetailService
 @inject NavigationManager Navigation
+
 <style>
     .order-details-container {
         max-width: 1500px;
@@ -106,64 +107,54 @@
             color: white;
         }
 </style>
+
 <div class="order-details-container">
-@if (order == null || orderDetails == null)
-{
-    <p>Loading...</p>
-}
-else
-{
+    @if (order == null || orderDetails == null)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
         <div class="order-info">
-    <h4>Order Information</h4>
-    <p>Member: @order.Member?.CompanyName</p>
-    <p>Order Date: @order.OrderDate.ToString("yyyy-MM-dd")</p>
-    <p>Total Amount: @CalculateTotal().ToString("C")</p>
-    </div>
+            <h4>Order Information</h4>
+            <p><strong>Member:</strong> @(order.Member?.CompanyName ?? "N/A")</p>
+            <p><strong>Order Date:</strong> @order.OrderDate.ToString("yyyy-MM-dd")</p>
+            <p><strong>Total Amount:</strong> @CalculateTotal().ToString("C")</p>
+        </div>
+
         <div class="table-container">
-    <h4>Order Details</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Unit Price</th>
-                <th>Quantity</th>
-                <th>Discount</th>
-                <th>Total</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var detail in orderDetails)
-            {
-                <tr>
-                    <td>@detail.Product.ProductName</td>
-                    <td>@detail.UnitPrice.ToString("C")</td>
-                    <td>@detail.Quantity</td>
-                    <td>@((detail.Discount * 100).ToString("F2"))%</td>
-                    <td>@((detail.UnitPrice * detail.Quantity * (1 - (decimal)detail.Discount)).ToString("C"))</td>
-                    <td>
-                        <NavLink class="btn btn-sm btn-outline-primary"
-                                 href="@($"/admin/orders/{detail.OrderId}/details/edit/{detail.ProductId}")">
-                            <i class="bi bi-pencil"></i> Edit
-                        </NavLink>
-                        <button class="btn btn-sm btn-outline-danger"
-                                @onclick="() => DeleteDetail(detail.OrderId, detail.ProductId)">
-                            <i class="bi bi-trash"></i> Delete
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    </div>
-    <NavLink class="btn btn-success" href="@($"/admin/orders/{OrderId}/details/create")">
-        Add New Detail
-    </NavLink>
-    <NavLink class="btn btn-secondary" href="/admin/orders">
-        Back to Orders
-    </NavLink>
-}
+            <h4>Order Details</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Unit Price</th>
+                        <th>Quantity</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detail in orderDetails)
+                    {
+                        <tr>
+                            <td>@(detail.Product?.ProductName ?? "N/A")</td>
+                            <td>@detail.UnitPrice.ToString("C")</td>
+                            <td>@detail.Quantity</td>
+                            <td>@((detail.Discount * 100).ToString("F2"))%</td>
+                            <td>@((detail.UnitPrice * detail.Quantity * (1 - (decimal)detail.Discount)).ToString("C"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <NavLink class="back-button" href="/user/orders">
+            Back to Orders
+        </NavLink>
+    }
 </div>
+
 @code {
     [Parameter]
     public int OrderId { get; set; }
@@ -180,15 +171,5 @@ else
     private decimal CalculateTotal()
     {
         return orderDetails?.Sum(od => od.UnitPrice * od.Quantity * (1 - (decimal)od.Discount)) ?? 0;
-    }
-
-    private async Task DeleteDetail(int orderId, int productId)
-    {
-       
-            await OrderDetailService.DeleteOrderDetailAsync(orderId, productId);
-            orderDetails = await OrderDetailService.GetOrderDetailsByOrderIdAsync(OrderId);
-            StateHasChanged();
-        
-       
     }
 }

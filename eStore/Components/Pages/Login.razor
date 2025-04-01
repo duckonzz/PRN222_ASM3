@@ -85,7 +85,8 @@
                 var userSession = new UserSession
                     {
                         Email = member.Email,
-                        Role = "Admin"
+                        Role = "Admin",
+                        MemberId = member.MemberId
                     };
                 var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
                 await customAuthStateProvider.UpdateAuthenticationState(userSession);
@@ -96,7 +97,8 @@
                 var userSession = new UserSession
                     {
                         Email = member.Email,
-                        Role = "Member"
+                        Role = "Member",
+                        MemberId = member.MemberId
                     };
                 var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
                 await customAuthStateProvider.UpdateAuthenticationState(userSession);
