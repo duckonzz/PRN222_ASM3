@@ -25,6 +25,8 @@ builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<ProtectedLocalStorage>();
@@ -79,6 +81,8 @@ app.Use(async (context, next) =>
     }
     await next();
 });
+
+app.UseDeveloperExceptionPage();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
