@@ -5,15 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessObject.DTO
+namespace DataAccess.DTO
 {
-    public class MemberDTO
+    public class RegisterDTO
     {
-        public int MemberId { get; set; }
-
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email format")]
-        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Company Name is required")]
@@ -30,6 +27,10 @@ namespace BusinessObject.DTO
 
         [Required(ErrorMessage = "Password is required")]
         [StringLength(30, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 30 characters")]
-        public string? Password { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Confirm Password is required")]
+        [Compare("Password", ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }
