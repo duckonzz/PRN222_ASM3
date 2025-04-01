@@ -12,6 +12,7 @@ namespace DataAccess.Repositories.Interfaces
     public interface IMemberRepository
     {
         public Task<List<MemberDTO>> GetAllAsync();
+        public Task<List<Member>> GetAllsAsync();
         public Task<MemberDTO> GetByIdAsync(int id);
         public Task<MemberDTO?> LoginAsync(string email, string password, IOptions<AdminAccountSettings> adminAccountSettings);
         public Task<bool> IsAdmin(MemberDTO member, IOptions<AdminAccountSettings> adminAccountSettings);
