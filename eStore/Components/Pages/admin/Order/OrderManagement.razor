@@ -8,7 +8,7 @@
 @inject NavigationManager Navigation
 
 <h3>Order Management</h3>
-
+<button class="btn btn-primary mb-3" @onclick="CreateNewOrder">Create New Order</button>
 @if (orders == null)
 {
     <p>Loading...</p>
@@ -38,7 +38,14 @@ else
                     <td>@(order.ShippedDate?.ToString("yyyy-MM-dd") ?? "-")</td>
                     <td>@CalculateTotal(order).ToString("C")</td>
                     <td>
-
+                        <button class="btn btn-sm btn-outline-primary"
+                                @onclick="() => EditOrder(order.OrderId)">
+                            Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => DeleteOrder(order.OrderId)">
+                            Delete
+                        </button>
                         <NavLink class="btn btn-sm btn-outline-danger"
                                  href="@($"/admin/orders/{order.OrderId}/details")">
                             <i class="bi bi-trash"></i>View
@@ -63,14 +70,13 @@ else
 
     private void CreateNewOrder()
     {
-        Navigation.NavigateTo("/orders/create");
+        Navigation.NavigateTo("/admin/orders/create");
     }
 
     private void EditOrder(int orderId)
     {
-        Navigation.NavigateTo($"/orders/edit/{orderId}");
+        Navigation.NavigateTo($"/admin/orders/edit/{orderId}");
     }
-
     private async Task DeleteOrder(int orderId)
     {
         await OrderService.DeleteOrderAsync(orderId);

@@ -1,68 +1,100 @@
 ﻿@page "/products"
-@using BusinessObject.Entities
-@using Service.Services.Interfaces
 @inject IProductService ProductService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Product List</PageTitle>
 
-<h3>Product List</h3>
+<AuthorizeView Roles="Admin" Context="auth">
+    <Authorized>
+        <h3>Product List</h3>
 
-<p>
-    <button class="btn btn-primary" @onclick="CreateProduct">Create New</button>
-</p>
+        <div class="row mb-3 justify-content-center">
+            <div class="col-md-3">
+                <InputText class="form-control" placeholder="Search name..." @bind-Value="searchName" />
+            </div>
+            <div class="col-md-3">
+                <InputNumber class="form-control" placeholder="Unit Price..." @bind-Value="UnitPrice" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" @onclick="ApplyFilter">Search</button>
+            </div>
+        </div>
 
-@if (products == null)
-{
-    <p><em>Loading products...</em></p>
-}
-else if (!products.Any())
-{
-    <p>No products found.</p>
-}
-else
-{
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Category ID</th>
-                <th>Weight</th>
-                <th>Unit Price</th>
-                <th>Units In Stock</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var product in products)
-            {
-                <tr>
-                    <td>@product.ProductName</td>
-                    <td>@product.CategoryId</td>
-                    <td>@product.Weight</td>
-                    <td>@product.UnitPrice</td>
-                    <td>@product.UnitsInStock</td>
-                    <td>
-                        <a class="btn btn-sm btn-info" href="@($"/products/edit?ProductId={product.ProductId}")">Edit</a>
-                        <a class="btn btn-sm btn-secondary" href="@($"/products/details?ProductId={product.ProductId}")">Details</a>
-                        <a class="btn btn-sm btn-danger" href="@($"/products/delete?ProductId={product.ProductId}")">Delete</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        <p>
+            <button class="btn btn-success" @onclick="CreateProduct">Create New</button>
+        </p>
+
+        @if (filteredProducts == null)
+        {
+            <p><em>Loading products...</em></p>
+        }
+        else if (!filteredProducts.Any())
+        {
+            <p>No products found.</p>
+        }
+        else
+        {
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Category ID</th>
+                        <th>Weight</th>
+                        <th>Unit Price</th>
+                        <th>Units In Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in filteredProducts)
+                    {
+                        <tr>
+                            <td>@product.ProductName</td>
+                            <td>@product.CategoryId</td>
+                            <td>@product.Weight</td>
+                            <td>@product.UnitPrice</td>
+                            <td>@product.UnitsInStock</td>
+                            <td>
+                                <a class="btn btn-sm btn-info" href="@($"/products/edit?ProductId={product.ProductId}")">Edit</a>
+                                <a class="btn btn-sm btn-secondary" href="@($"/products/details?ProductId={product.ProductId}")">Details</a>
+                                <a class="btn btn-sm btn-danger" href="@($"/products/delete?ProductId={product.ProductId}")">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to access this page.</p>
+        <a href="/login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private List<Product>? products;
+    private List<Product>? filteredProducts;
+    private string? searchName;
+    private decimal? UnitPrice;
 
     protected override async Task OnInitializedAsync()
     {
         products = await ProductService.GetAllProductsAsync();
+        filteredProducts = products;
     }
 
     private void CreateProduct()
     {
         NavigationManager.NavigateTo("/products/create");
+    }
+
+    private void ApplyFilter()
+    {
+        if (products == null) return;
+
+        filteredProducts = products.Where(p =>
+            (string.IsNullOrEmpty(searchName) || p.ProductName.Contains(searchName, StringComparison.OrdinalIgnoreCase)) &&
+            (!UnitPrice.HasValue || p.UnitPrice <= UnitPrice.Value)
+        ).ToList();
     }
 }

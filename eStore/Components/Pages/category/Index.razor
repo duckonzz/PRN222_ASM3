@@ -1,0 +1,68 @@
+﻿@page "/categories"
+@inject ICategoryService CategoryService
+@inject NavigationManager NavigationManager
+
+<AuthorizeView Roles="Admin" Context="auth">
+    <Authorized>
+        <PageTitle>Category List</PageTitle>
+
+        <h3>Category List</h3>
+
+        <p>
+            <button class="btn btn-primary" @onclick="CreateCategory">Create New</button>
+        </p>
+
+        @if (categories == null)
+        {
+            <p><em>Loading categories...</em></p>
+        }
+        else if (!categories.Any())
+        {
+            <p>No categories found.</p>
+        }
+        else
+        {
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Category Name</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in categories)
+                    {
+                        <tr>
+                            <td>@category.CategoryName</td>
+                            <td>@category.Description</td>
+                            <td>
+                                <a class="btn btn-sm btn-info" href="@($"/categories/edit?CategoryId={category.CategoryId}")">Edit</a>
+                                <a class="btn btn-sm btn-secondary" href="@($"/categories/details?CategoryId={category.CategoryId}")">Details</a>
+                                <a class="btn btn-sm btn-danger" href="@($"/categories/delete?CategoryId={category.CategoryId}")">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to access this page.</p>
+        <a href="/login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<Category>? categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoryService.GetAllCategoriesAsync();
+    }
+
+    private void CreateCategory()
+    {
+        NavigationManager.NavigateTo("/categories/create");
+    }
+}

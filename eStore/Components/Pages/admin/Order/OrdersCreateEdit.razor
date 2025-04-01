@@ -1,0 +1,87 @@
+﻿@page "/admin/orders/create"
+@page "/admin/orders/edit/{OrderId:int}"
+
+@inject IOrderService OrderService
+@inject NavigationManager Navigation
+
+<h3>@(OrderId == null ? "Create" : "Edit") Order</h3>
+
+@if (order == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="order" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label>Member ID</label>
+            <InputNumber @bind-Value="order.MemberId" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Order Date</label>
+            <InputDate @bind-Value="order.OrderDate" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Required Date</label>
+            <InputDate @bind-Value="order.RequiredDate" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Shipped Date</label>
+            <InputDate @bind-Value="order.ShippedDate" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int? OrderId { get; set; }
+
+    private Order order = new Order();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (OrderId.HasValue)
+        {
+            order = await OrderService.GetOrderByIdAsync(OrderId.Value) ?? new Order();
+        }
+        else
+        {
+            order.OrderDate = DateTime.Now;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (OrderId.HasValue)
+            {
+                await OrderService.UpdateOrderAsync(order);
+            }
+            else
+            {
+                await OrderService.AddOrderAsync(order);
+            }
+            Navigation.NavigateTo("/admin/orders");
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+            Console.WriteLine($"Error saving order: {ex.Message}");
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/admin/orders");
+    }
+}

@@ -26,10 +26,20 @@ namespace DataAccess.Repositories
 
         public async Task DeleteOrderAsync(int orderId)
         {
-            var order = await _context.Orders.FindAsync(orderId);
+            var order = await _context.Orders
+           .Include(o => o.OrderDetails) 
+           .FirstOrDefaultAsync(o => o.OrderId == orderId);
             if (order != null)
             {
+                if (order.OrderDetails != null && order.OrderDetails.Any())
+                {
+                    _context.OrderDetails.RemoveRange(order.OrderDetails);
+                }
+
+               
                 _context.Orders.Remove(order);
+
+              
                 await _context.SaveChangesAsync();
             }
         }
