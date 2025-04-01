@@ -1,4 +1,4 @@
-﻿using BusinessObject.DTO;
+﻿using DataAccess.DTO;
 using BusinessObject.Entities;
 using DataAccess.Repositories.Interfaces;
 using eStore.Services.Interfaces;
