@@ -23,6 +23,9 @@ builder.Services.AddDbContext<eStoreDuckContext>(options => options.UseSqlServer
 builder.Services.Configure<AdminAccountSettings>(builder.Configuration.GetSection("AdminAccount"));
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<ProtectedLocalStorage>();
 builder.Services.AddAuthentication(options =>
