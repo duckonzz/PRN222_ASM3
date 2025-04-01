@@ -2,7 +2,7 @@ using DataAccess.DTO;
 using BusinessObject.Entities;
 using Microsoft.Extensions.Options;
 
-namespace eStore.Services.Interfaces
+namespace Service.Services.Interfaces
 {
     public interface IMemberService
     {
