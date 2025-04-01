@@ -30,9 +30,6 @@ namespace DataAccess.Repositories
             var existingProduct = await _dbSet.FirstOrDefaultAsync(p => p.ProductId == product.ProductId);
             if (existingProduct is not null)
             {
-                Console.WriteLine("New Name from UI: " + product.ProductName);
-                Console.WriteLine("Old Name in DB: " + existingProduct.ProductName);
-
                 existingProduct.CategoryId = product.CategoryId;
                 existingProduct.ProductName = product.ProductName;
                 existingProduct.Weight = product.Weight;
@@ -40,7 +37,6 @@ namespace DataAccess.Repositories
                 existingProduct.UnitsInStock = product.UnitsInStock;
 
                 await _context.SaveChangesAsync();
-                Console.WriteLine("Saved changes.");
             }
             else
             {
