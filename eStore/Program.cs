@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using eStore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using DataAccess.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
 
