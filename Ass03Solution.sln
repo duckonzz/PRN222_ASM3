@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessObject", "BusinessO
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "eStore", "eStore\eStore.csproj", "{5DD37FF5-A507-45B6-BFBA-F6D5033266D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "Service\Service.csproj", "{C2F2E7F2-CFB0-4F2B-9C48-F147EE15F322}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{5DD37FF5-A507-45B6-BFBA-F6D5033266D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DD37FF5-A507-45B6-BFBA-F6D5033266D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DD37FF5-A507-45B6-BFBA-F6D5033266D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2F2E7F2-CFB0-4F2B-9C48-F147EE15F322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2F2E7F2-CFB0-4F2B-9C48-F147EE15F322}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2F2E7F2-CFB0-4F2B-9C48-F147EE15F322}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2F2E7F2-CFB0-4F2B-9C48-F147EE15F322}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

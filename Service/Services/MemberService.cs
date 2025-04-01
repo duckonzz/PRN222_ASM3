@@ -1,10 +1,10 @@
 ﻿using DataAccess.DTO;
 using BusinessObject.Entities;
 using DataAccess.Repositories.Interfaces;
-using eStore.Services.Interfaces;
+using Service.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace eStore.Services
+namespace Service.Services
 {
     public class MemberService : IMemberService
     {
