@@ -1,6 +1,7 @@
 ﻿@page "/checkout"
 
 @using BusinessObject.Entities
+@using Service.Services
 @using Service.Services.Interfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using Microsoft.AspNetCore.Components.Authorization
@@ -8,6 +9,7 @@
 @inject ProtectedLocalStorage LocalStorage
 @inject IOrderService OrderService
 @inject IOrderDetailService OrderDetailService
+@inject IMemberService MemberService  
 @inject AuthenticationStateProvider AuthStateProvider
 
 <div class="checkout-container">
@@ -25,9 +27,9 @@
         <div class="checkout-summary">
             <h4>Order Summary</h4>
             <p>Total Items: @cart.Count</p>
-            <p>Subtotal: @cart.Sum(p => p.UnitPrice).ToString("C")</p>
-            <p>Shipping: $5.00</p>
-            <p><strong>Grand Total: @(cart.Sum(p => p.UnitPrice) + 5)</strong></p>
+            <p>Total: @cart.Sum(p => p.UnitPrice).ToString("C")</p>
+            @* <p>Shipping: $5.00</p> *@
+            @* <p><strong>Grand Total: @(cart.Sum(p => p.UnitPrice) + 5)</strong></p> *@
         </div>
 
         <div class="checkout-form">
@@ -39,7 +41,7 @@
 
             <div class="form-group">
                 <label for="address">Shipping Address</label>
-                <textarea id="address" class="form-control" @bind="shippingAddress"></textarea>
+                <textarea id="address" class="form-control" @bind="shippingAddress" readonly></textarea>
             </div>
 
             <div class="checkout-actions">
@@ -69,7 +71,7 @@
 @code {
     private List<Product> cart = new List<Product>();
     private DateTime requiredDate = DateTime.Now.AddDays(3);
-    private string shippingAddress = "";
+    private string shippingAddress = "";  // This will be populated from Member data
     private bool isProcessing = false;
     private string errorMessage = "";
     private int currentMemberId = 0;
@@ -78,6 +80,7 @@
     {
         await LoadCartFromStorage();
         await GetCurrentMemberId();
+        await LoadMemberShippingAddress();  // New method to load address
     }
 
     private async Task GetCurrentMemberId()
@@ -87,7 +90,6 @@
 
         if (user.Identity.IsAuthenticated)
         {
-            // Try to get member ID from claims
             var memberIdClaim = user.FindFirst("MemberId");
             if (memberIdClaim != null && int.TryParse(memberIdClaim.Value, out int memberId))
             {
@@ -95,7 +97,6 @@
             }
             else
             {
-                // Fallback: try to get from localStorage
                 try
                 {
                     var userSessionResult = await LocalStorage.GetAsync<string>("UserSession");
@@ -112,6 +113,30 @@
                 {
                     Console.WriteLine($"Error getting member ID: {ex.Message}");
                 }
+            }
+        }
+    }
+
+    private async Task LoadMemberShippingAddress()
+    {
+        if (currentMemberId > 0)
+        {
+            try
+            {
+                var member = await MemberService.GetMemberByIdAsync(currentMemberId);
+                if (member != null)
+                {
+                    shippingAddress = $"{member.Country}, {member.City}";  // Combine Country and City
+                }
+                else
+                {
+                    errorMessage = "Could not load member information.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading member address: {ex.Message}");
+                errorMessage = "An error occurred while loading your shipping address.";
             }
         }
     }
@@ -156,19 +181,16 @@
 
         try
         {
-            // Create the Order object
             var order = new Order
-                {
-                    MemberId = currentMemberId,
-                    OrderDate = DateTime.Now,
+            {
+                MemberId = currentMemberId,
+                OrderDate = DateTime.Now,
+                ShippedDate = requiredDate,
                     RequiredDate = requiredDate,
-                    Freight = 5.0m, // Shipping cost
-                };
+            };
 
-            // Add the order to get the OrderId
             await OrderService.AddOrderAsync(order);
 
-            // Get the latest orders to find the one we just created
             var memberOrders = await OrderService.GetOrdersByMemberIdAsync(currentMemberId);
             var createdOrder = memberOrders
                 .OrderByDescending(o => o.OrderDate)
@@ -176,25 +198,20 @@
 
             if (createdOrder != null)
             {
-                // Add order details for each cart item
                 foreach (var item in cart)
                 {
                     var orderDetail = new OrderDetail
-                        {
-                            OrderId = createdOrder.OrderId,
-                            ProductId = item.ProductId,
-                            UnitPrice = item.UnitPrice,
-                            Quantity = 1, // Default to 1, modify if you track quantities
-                            Discount = 0.0 // No discount by default
-                        };
-
+                    {
+                        OrderId = createdOrder.OrderId,
+                        ProductId = item.ProductId,
+                        UnitPrice = item.UnitPrice,
+                        Quantity = 1,
+                        Discount = 0.0
+                    };
                     await OrderDetailService.AddOrderDetailAsync(orderDetail);
                 }
 
-                // Clear the cart
                 await LocalStorage.DeleteAsync("ShoppingCart");
-
-                // Navigate to confirmation page with the order ID
                 Navigation.NavigateTo($"/order-confirmation/{createdOrder.OrderId}");
             }
             else
@@ -221,7 +238,6 @@
         Navigation.NavigateTo("/user/products");
     }
 
-    // Class to deserialize the user session
     private class UserSession
     {
         public string Email { get; set; }
@@ -232,7 +248,7 @@
 
 <style>
     .checkout-container {
-        max-width: 800px;
+        max-width: 1000px;
         margin: 0 auto;
         padding: 20px;
         font-family: Arial, sans-serif;

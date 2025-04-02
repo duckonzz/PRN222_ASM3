@@ -2,19 +2,22 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace BusinessObject.Entities;
 
 public partial class Order
 {
+    [Required] 
+    
     public int OrderId { get; set; }
-
+    [Required]
     public int MemberId { get; set; }
-
+    [Required]
     public DateTime OrderDate { get; set; }
-
+    
     public DateTime? RequiredDate { get; set; }
-
+    [Required]
     public DateTime? ShippedDate { get; set; }
 
     public decimal? Freight { get; set; }
