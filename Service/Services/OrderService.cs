@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Entities;
+using DataAccess.DTO;
 using DataAccess.Repositories.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 using Service.Services.Interfaces;
 
 namespace Service.Services
@@ -12,10 +14,12 @@ namespace Service.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly IHubContext<ProductCategoryHub> _hub;
 
-        public OrderService(IOrderRepository orderRepository)
+        public OrderService(IOrderRepository orderRepository, IHubContext<ProductCategoryHub> hub)
         {
             _orderRepository = orderRepository;
+            _hub = hub;
         }
 
         public async Task<List<Order>> GetAllOrdersAsync()
@@ -41,6 +45,7 @@ namespace Service.Services
         public async Task DeleteOrderAsync(int orderId)
         {
             await _orderRepository.DeleteOrderAsync(orderId);
+            await _hub.Clients.All.SendAsync("OrderDeleted", orderId);
         }
         public async Task<List<Order>> GetOrdersByMemberIdAsync(int memberId)
         {

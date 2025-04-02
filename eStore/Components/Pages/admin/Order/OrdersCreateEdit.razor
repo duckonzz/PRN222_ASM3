@@ -20,13 +20,13 @@ else
 
         <div class="form-group">
             <label>Member</label>
-            <InputSelect @bind-Value="order.MemberId" class="form-control">
+                    <InputSelect disabled @bind-Value="order.MemberId" class="form-control">
                 <option value="0">Select a member</option>
                 @if (members.Any() && members!=null)
                 {
                     @foreach (var member in members)
                     {
-                        <option value="@member.MemberId">@member.CompanyName (@member.MemberId)</option>
+                                <option  value="@member.MemberId">@member.CompanyName (@member.MemberId) </option>
                     }
                 }
                 else
@@ -39,12 +39,12 @@ else
 
         <div class="form-group">
             <label>Order Date</label>
-            <InputDate @bind-Value="order.OrderDate" class="form-control" />
+            <InputDate @bind-Value="order.OrderDate" class="form-control"  readonly/>
         </div>
 
         <div class="form-group">
             <label>Required Date</label>
-            <InputDate @bind-Value="order.RequiredDate" class="form-control" />
+            <InputDate readonly  @bind-Value="order.RequiredDate" class="form-control" />
         </div>
 
         <div class="form-group">

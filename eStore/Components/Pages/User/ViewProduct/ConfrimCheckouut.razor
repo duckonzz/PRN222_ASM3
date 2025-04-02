@@ -29,7 +29,7 @@
                     <table class="items-table">
                         <thead>
                             <tr>
-                                <th>Product ID</th>
+                                <th>Product</th> <!-- Changed from Product ID to Product -->
                                 <th>Price</th>
                                 <th>Quantity</th>
                                 <th>Total</th>
@@ -39,7 +39,7 @@
                             @foreach (var item in orderDetails)
                             {
                                 <tr>
-                                    <td>@item.ProductId</td>
+                                    <td>@item.Product.ProductName</td> <!-- Display ProductName -->
                                     <td>@item.UnitPrice.ToString("C")</td>
                                     <td>@item.Quantity</td>
                                     <td>@((item.UnitPrice * item.Quantity).ToString("C"))</td>
@@ -94,7 +94,7 @@
 
             if (order != null)
             {
-                // Load the order details
+                // Load the order details with Product data
                 orderDetails = await OrderDetailService.GetOrderDetailsByOrderIdAsync(OrderId);
             }
         }
@@ -112,7 +112,7 @@
 
 <style>
     .confirmation-container {
-        max-width: 1500px;
+        max-width: 1000px;
         margin: 40px auto;
         padding: 20px;
         font-family: Arial, sans-serif;

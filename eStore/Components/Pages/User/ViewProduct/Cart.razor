@@ -30,19 +30,21 @@
                     <tr>
                         <th>Product</th>
                         <th>Price</th>
-                      
+                        <th>Quantity</th> 
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in cart)
+                    @foreach (var group in cart.GroupBy(p => p.ProductName))
                     {
+                        var product = group.First(); 
+                        var quantity = group.Count(); 
                         <tr>
-                            <td>@(item.ProductName ?? "N/A")</td>
-                            <td>@item.UnitPrice.ToString("C")</td>
-                           
+                            <td>@(product.ProductName ?? "N/A")</td>
+                            <td>@product.UnitPrice.ToString("C")</td>
+                            <td>@quantity</td> 
                             <td>
-                                <button class="btn-remove" @onclick="() => RemoveFromCart(item)">Remove</button>
+                                <button class="btn-remove" @onclick="() => RemoveFromCart(product)">Remove</button>
                             </td>
                         </tr>
                     }
@@ -53,7 +55,7 @@
         <div class="cart-actions">
             <button class="btn-continue-shopping" @onclick="ContinueShopping">Continue Shopping</button>
             <button class="btn-checkout" @onclick="Checkout">Buy</button>
-            <button class="btn-clear-cart" @onclick="ClearCart">Clear Cart</button>
+           
         </div>
     }
 </div>
@@ -102,9 +104,14 @@
 
     private async Task RemoveFromCart(Product product)
     {
-        cart.Remove(product);
-        await SaveCartToStorage();
-        StateHasChanged();
+        // Remove one instance of the product
+        var itemToRemove = cart.FirstOrDefault(p => p.ProductName == product.ProductName);
+        if (itemToRemove != null)
+        {
+            cart.Remove(itemToRemove);
+            await SaveCartToStorage();
+            StateHasChanged();
+        }
     }
 
     private async Task ClearCart()
@@ -121,7 +128,6 @@
 
     private void Checkout()
     {
-        // Navigate to checkout page (to be implemented)
         Navigation.NavigateTo("/checkout");
     }
 }
@@ -163,7 +169,7 @@
         border-radius: 8px;
         margin-bottom: 20px;
         text-align: left;
-        font-weight:bold;
+        font-weight: bold;
     }
 
         .cart-summary p {
@@ -223,19 +229,6 @@
             background-color: #218838;
         }
 
-    .btn-clear-cart {
-        padding: 10px 20px;
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-        .btn-clear-cart:hover {
-            background-color: #c82333;
-        }
 
     .btn-remove {
         padding: 5px 10px;
