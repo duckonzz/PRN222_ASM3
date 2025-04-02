@@ -94,6 +94,8 @@
         padding: 20px;
     }
 </style>
+<AuthorizeView Roles="Admin" Context="auth">
+    <Authorized>
 <div class="order-history-container">
 <h3>Order Management</h3>
 <button class="btn btn-primary mb-3" @onclick="CreateNewOrder">Create New Order</button>
@@ -151,6 +153,12 @@ else
 
 }
 </div>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to access this page.</p>
+        <a href="/login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     private List<Order> orders;
 

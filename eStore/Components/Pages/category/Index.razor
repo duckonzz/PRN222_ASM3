@@ -1,15 +1,17 @@
 ﻿@page "/categories"
+@using Microsoft.AspNetCore.SignalR.Client
 @inject ICategoryService CategoryService
 @inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>Category List</PageTitle>
 
 <AuthorizeView Roles="Admin" Context="auth">
     <Authorized>
-        <PageTitle>Category List</PageTitle>
-
         <h3>Category List</h3>
 
         <p>
-            <button class="btn btn-primary" @onclick="CreateCategory">Create New</button>
+            <button class="btn btn-success" @onclick="CreateCategory">Create New</button>
         </p>
 
         @if (categories == null)
@@ -55,14 +57,75 @@
 
 @code {
     private List<Category>? categories;
+    private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         categories = await CategoryService.GetAllCategoriesAsync();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/productcategoryhub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<CategorySignalRDTO>("CategoryCreated", dto =>
+        {
+            categories ??= new();
+            categories.Add(new Category
+                {
+                    CategoryId = dto.CategoryId,
+                    CategoryName = dto.CategoryName,
+                    Description = dto.Description
+                });
+            InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<CategorySignalRDTO>("CategoryUpdated", dto =>
+        {
+            var index = categories?.FindIndex(c => c.CategoryId == dto.CategoryId) ?? -1;
+            if (index >= 0)
+            {
+                categories![index] = new Category
+                    {
+                        CategoryId = dto.CategoryId,
+                        CategoryName = dto.CategoryName,
+                        Description = dto.Description
+                    };
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<int>("CategoryDeleted", id =>
+        {
+            var c = categories?.FirstOrDefault(c => c.CategoryId == id);
+            if (c != null)
+            {
+                categories?.Remove(c);
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
+        try
+        {
+            await hubConnection.StartAsync();
+            Console.WriteLine("SignalR connection started for Category");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SignalR for Category failed: {ex.Message}");
+        }
     }
 
     private void CreateCategory()
     {
         NavigationManager.NavigateTo("/categories/create");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 }

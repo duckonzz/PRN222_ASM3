@@ -51,6 +51,8 @@ builder.Services.AddAuthentication(options =>
 // Configure Distributed Cache (for session persistence across SignalR connections)
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
+// Add SignalR
+builder.Services.AddSignalR();
 // Add Session
 builder.Services.AddSession(options =>
 {
@@ -85,6 +87,8 @@ app.Use(async (context, next) =>
     }
     await next();
 });
+
+app.MapHub<ProductCategoryHub>("/productcategoryhub");
 
 app.UseDeveloperExceptionPage();
 
