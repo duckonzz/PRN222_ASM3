@@ -41,7 +41,7 @@ namespace DataAccess.Repositories
 
             if (existingOrderDetail != null)
             {
-                // Nếu OrderDetail đã tồn tại, cập nhật số lượng
+                // If OrderDetail existed, update its quantity
                 existingOrderDetail.Quantity += orderDetail.Quantity;
                 existingOrderDetail.Discount = orderDetail.Discount;
 

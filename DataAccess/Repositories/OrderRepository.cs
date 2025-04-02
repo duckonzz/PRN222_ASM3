@@ -34,12 +34,8 @@ namespace DataAccess.Repositories
                 if (order.OrderDetails != null && order.OrderDetails.Any())
                 {
                     _context.OrderDetails.RemoveRange(order.OrderDetails);
-                }
-
-               
-                _context.Orders.Remove(order);
-
-              
+                }             
+                _context.Orders.Remove(order);              
                 await _context.SaveChangesAsync();
             }
         }
@@ -52,7 +48,7 @@ namespace DataAccess.Repositories
                   .ToListAsync();
         }
 
-        public async Task<Order> GetOrderByIdAsyn(int orderId)
+        public async Task<Order> GetOrderByIdAsync(int orderId)
         {
             return await _context.Orders
                 .Include(o => o.OrderDetails)
@@ -73,7 +69,5 @@ namespace DataAccess.Repositories
                 .Where(o => o.MemberId == memberId)
                 .ToListAsync();
         }
-
-
     }
 }
