@@ -109,18 +109,18 @@
 <AuthorizeView Roles="Admin" Context="auth">
     <Authorized>
 <div class="order-details-container">
-@if (order == null || orderDetails == null)
-{
-    <p>Loading...</p>
-}
-else
-{
+    @if (order == null || orderDetails == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
         <div class="order-info">
-    <h4>Order Information</h4>
-    <p>Member: @order.Member?.CompanyName</p>
-    <p>Order Date: @order.OrderDate.ToString("yyyy-MM-dd")</p>
-    <p>Total Amount: @CalculateTotal().ToString("C")</p>
-    </div>
+            <h4>Order Information</h4>
+            <p>Member: @order.Member?.CompanyName</p>
+            <p>Order Date: @order.OrderDate.ToString("yyyy-MM-dd")</p>
+            <p>Total Amount: @CalculateTotal().ToString("C")</p>
+        </div>
         <div class="table-container">
     <h4>Order Details</h4>
     <table class="table">
@@ -192,11 +192,8 @@ else
 
     private async Task DeleteDetail(int orderId, int productId)
     {
-       
-            await OrderDetailService.DeleteOrderDetailAsync(orderId, productId);
-            orderDetails = await OrderDetailService.GetOrderDetailsByOrderIdAsync(OrderId);
-            StateHasChanged();
-        
-       
+        await OrderDetailService.DeleteOrderDetailAsync(orderId, productId);
+        orderDetails = await OrderDetailService.GetOrderDetailsByOrderIdAsync(OrderId);
+        StateHasChanged();
     }
 }

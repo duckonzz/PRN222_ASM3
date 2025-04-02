@@ -10,7 +10,7 @@ namespace DataAccess.Repositories.Interfaces
     public interface IOrderRepository
     {
         Task<List<Order>> GetAllOrdersAsync();
-        Task<Order> GetOrderByIdAsyn(int orderId);
+        Task<Order> GetOrderByIdAsync(int orderId);
         Task AddOrderAsync(Order order);
         Task UpdateOrderAsync(Order order);
         Task DeleteOrderAsync(int orderId);

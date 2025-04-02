@@ -30,7 +30,7 @@
             {
                 <div class="product-card">
                     <h4>@(product.ProductName ?? "N/A")</h4>
-                    <p><strong>Category ID:</strong> @product?.Category?.CategoryName</p>
+                    @* <p><strong>Category ID:</strong> @product?.Category?.CategoryName</p> *@
                     <p><strong>Weight:</strong> @(product.Weight ?? "N/A")</p>
                     <p class="price">@product.UnitPrice.ToString("C")</p>
                     <p><strong>In Stock:</strong> @product.UnitsInStock</p>
