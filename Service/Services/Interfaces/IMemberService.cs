@@ -1,6 +1,5 @@
 using DataAccess.DTO;
 using BusinessObject.Entities;
-using Microsoft.Extensions.Options;
 
 namespace Service.Services.Interfaces
 {
