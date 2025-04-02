@@ -6,7 +6,8 @@
 @inject IOrderDetailService OrderDetailService
 @inject IProductService ProductService
 @inject NavigationManager Navigation
-
+<AuthorizeView Roles="Admin" Context="auth">
+    <Authorized>
 <h3>@(ProductId.HasValue ? "Edit" : "Create") Order Detail</h3>
 
 <EditForm Model="detail" OnValidSubmit="HandleSubmit" formname="orderDetailForm">
@@ -49,7 +50,12 @@
     <button type="submit" class="btn btn-primary">Save</button>
     <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
 </EditForm>
-
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to access this page.</p>
+        <a href="/login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     private double discountPercentage;
     [Parameter]

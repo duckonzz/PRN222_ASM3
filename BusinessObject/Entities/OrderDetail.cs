@@ -2,17 +2,19 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace BusinessObject.Entities;
 
 public partial class OrderDetail
 {
+    [Required]
     public int OrderId { get; set; }
-
+    [Required]
     public int ProductId { get; set; }
-
+    [Required]
     public decimal UnitPrice { get; set; }
-
+    [Required]
     public int Quantity { get; set; }
 
     public double Discount { get; set; }

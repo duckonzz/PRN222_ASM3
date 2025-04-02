@@ -106,6 +106,8 @@
             color: white;
         }
 </style>
+<AuthorizeView Roles="Admin" Context="auth">
+    <Authorized>
 <div class="order-details-container">
     @if (order == null || orderDetails == null)
     {
@@ -120,50 +122,56 @@
             <p>Total Amount: @CalculateTotal().ToString("C")</p>
         </div>
         <div class="table-container">
-            <h4>Order Details</h4>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Unit Price</th>
-                        <th>Quantity</th>
-                        <th>Discount</th>
-                        <th>Total</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var detail in orderDetails)
-                    {
-                        <tr>
-                            <td>@detail.Product.ProductName</td>
-                            <td>@detail.UnitPrice.ToString("C")</td>
-                            <td>@detail.Quantity</td>
-                            <td>@((detail.Discount * 100).ToString("F2"))%</td>
-                            <td>@((detail.UnitPrice * detail.Quantity * (1 - (decimal)detail.Discount)).ToString("C"))</td>
-                            <td>
-                                <NavLink class="btn btn-sm btn-outline-primary"
-                                         href="@($"/admin/orders/{detail.OrderId}/details/edit/{detail.ProductId}")">
-                                    <i class="bi bi-pencil"></i> Edit
-                                </NavLink>
-                                <button class="btn btn-sm btn-outline-danger"
-                                        @onclick="() => DeleteDetail(detail.OrderId, detail.ProductId)">
-                                    <i class="bi bi-trash"></i> Delete
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <NavLink class="btn btn-success" href="@($"/admin/orders/{OrderId}/details/create")">
-            Add New Detail
-        </NavLink>
-        <NavLink class="btn btn-secondary" href="/admin/orders">
-            Back to Orders
-        </NavLink>
-    }
+    <h4>Order Details</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Unit Price</th>
+                <th>Quantity</th>
+                <th>Discount</th>
+                <th>Total</th>
+                @* <th>Actions</th> *@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detail in orderDetails)
+            {
+                <tr>
+                    <td>@detail.Product.ProductName</td>
+                    <td>@detail.UnitPrice.ToString("C")</td>
+                    <td>@detail.Quantity</td>
+                    <td>@((detail.Discount * 100).ToString("F2"))%</td>
+                    <td>@((detail.UnitPrice * detail.Quantity * (1 - (decimal)detail.Discount)).ToString("C"))</td>
+                    <td>
+                        @* <NavLink class="btn btn-sm btn-outline-primary" *@
+                        @*          href="@($"/admin/orders/{detail.OrderId}/details/edit/{detail.ProductId}")"> *@
+                        @*     <i class="bi bi-pencil"></i> Edit *@
+                        @* </NavLink> *@
+                        @* <button class="btn btn-sm btn-outline-danger" *@
+                        @*         @onclick="() => DeleteDetail(detail.OrderId, detail.ProductId)"> *@
+                        @*     <i class="bi bi-trash"></i> Delete *@
+                        @* </button> *@
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+    @* <NavLink class="btn btn-success" href="@($"/admin/orders/{OrderId}/details/create")"> *@
+    @*     Add New Detail *@
+    @* </NavLink> *@
+    <NavLink class="btn btn-secondary" href="/admin/orders">
+        Back to Orders
+    </NavLink>
+}
 </div>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to access this page.</p>
+        <a href="/login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     [Parameter]
     public int OrderId { get; set; }
