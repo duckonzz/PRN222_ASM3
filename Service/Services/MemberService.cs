@@ -21,6 +21,7 @@ namespace Service.Services
         {
             return await _memberRepository.GetAllAsync();
         }
+      
 
         public async Task<MemberDTO> GetMemberByIdAsync(int id)
         {
@@ -55,6 +56,11 @@ namespace Service.Services
         public async Task DeleteMemberAsync(int id)
         {
             await _memberRepository.DeleteAsync(id);
+        }
+
+        public async Task<List<Member>> GetAllsAsync()
+        {
+           return await _memberRepository.GetAllsAsync();
         }
     }
 }

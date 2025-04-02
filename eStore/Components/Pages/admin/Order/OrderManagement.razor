@@ -1,0 +1,190 @@
+﻿@page "/admin/orders"
+
+@using BusinessObject.Entities
+@using Service.Services
+@using Service.Services.Interfaces
+
+@inject IOrderService OrderService
+@inject NavigationManager Navigation
+<style>
+    .order-history-container {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+        .order-history-container h3 {
+            color: #333;
+            font-size: 26px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .table thead {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .table th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+
+            .table tbody tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+            .table tbody tr:hover {
+                background-color: #f1f1f1;
+            }
+
+        .table td {
+            padding: 12px 15px;
+            color: #555;
+            font-size: 15px;
+        }
+
+    .btn-view {
+        padding: 6px 12px;
+        font-size: 14px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+
+        .btn-view:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+
+    .loading-text {
+        text-align: center;
+        font-size: 18px;
+        color: #666;
+        padding: 20px;
+    }
+
+    .no-orders {
+        text-align: center;
+        font-size: 16px;
+        color: #666;
+        padding: 20px;
+    }
+</style>
+<AuthorizeView Roles="Admin" Context="auth">
+    <Authorized>
+<div class="order-history-container">
+<h3>Order Management</h3>
+<button class="btn btn-primary mb-3" @onclick="CreateNewOrder">Create New Order</button>
+@if (orders == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+        <div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Member</th>
+                <th>Order Date</th>
+                <th>Required Date</th>
+                <th>Shipped Date</th>
+                 <th>Freight</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in orders)
+            {
+                <tr>
+                    <td>@order.OrderId</td>
+                    <td>@order.Member.CompanyName</td>
+                    <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
+                    <td>@(order.RequiredDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                    <td>@(order.ShippedDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+							<td>@(order.Freight?.ToString("C") ?? "$0.00")</td>
+                    <td>@CalculateTotal(order).ToString("C")</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary"
+                                @onclick="() => EditOrder(order.OrderId)">
+                            Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => DeleteOrder(order.OrderId)">
+                            Delete
+                        </button>
+                        <NavLink class="btn btn-sm btn-outline-danger"
+                                 href="@($"/admin/orders/{order.OrderId}/details")">
+                            <i class="bi bi-trash"></i>View
+                        </NavLink>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+
+}
+</div>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to access this page.</p>
+        <a href="/login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+    private List<Order> orders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await OrderService.GetAllOrdersAsync();
+    }
+
+    private void CreateNewOrder()
+    {
+        Navigation.NavigateTo("/admin/orders/create");
+    }
+
+    private void EditOrder(int orderId)
+    {
+        Navigation.NavigateTo($"/admin/orders/edit/{orderId}");
+    }
+    private async Task DeleteOrder(int orderId)
+    {
+        await OrderService.DeleteOrderAsync(orderId);
+        orders = await OrderService.GetAllOrdersAsync();
+        StateHasChanged();
+    }
+    private decimal CalculateTotal(Order order)
+    {
+        return order.OrderDetails?.Sum(od => od.UnitPrice * od.Quantity * (1 - (decimal)od.Discount)) ?? 0;
+    }
+}
+

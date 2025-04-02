@@ -14,5 +14,6 @@ namespace Service.Services.Interfaces
         Task AddMemberAsync(MemberDTO member);
         Task UpdateMemberAsync(MemberUpdateDTO member);
         Task DeleteMemberAsync(int id);
+        Task<List<Member>> GetAllsAsync();
     }
 }

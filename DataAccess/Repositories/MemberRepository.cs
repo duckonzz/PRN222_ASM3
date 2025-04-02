@@ -155,5 +155,14 @@ namespace DataAccess.Repositories
 				await _context.SaveChangesAsync();
 			}
 		}
-	}
+
+        public async Task<List<Member>> GetAllsAsync()
+        {
+            if (_context.Members == null)
+            {
+                return new List<Member>(); 
+            }
+            return await _context.Members.ToListAsync();
+        }
+    }
 }

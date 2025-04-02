@@ -23,6 +23,15 @@ builder.Services.AddDbContext<eStoreDuckContext>(options => options.UseSqlServer
 builder.Services.Configure<AdminAccountSettings>(builder.Configuration.GetSection("AdminAccount"));
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+builder.Services.AddScoped<IOrderDetailService, OrderDetailService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<ProtectedLocalStorage>();
 builder.Services.AddAuthentication(options =>
@@ -42,6 +51,8 @@ builder.Services.AddAuthentication(options =>
 // Configure Distributed Cache (for session persistence across SignalR connections)
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
+// Add SignalR
+builder.Services.AddSignalR();
 // Add Session
 builder.Services.AddSession(options =>
 {
@@ -76,6 +87,10 @@ app.Use(async (context, next) =>
     }
     await next();
 });
+
+app.MapHub<ProductCategoryHub>("/productcategoryhub");
+
+app.UseDeveloperExceptionPage();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
