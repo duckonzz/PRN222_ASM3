@@ -112,6 +112,7 @@ else
                 <th>Order Date</th>
                 <th>Required Date</th>
                 <th>Shipped Date</th>
+                 <th>Freight</th>
                 <th>Total Amount</th>
                 <th>Actions</th>
             </tr>
@@ -125,6 +126,7 @@ else
                     <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
                     <td>@(order.RequiredDate?.ToString("yyyy-MM-dd") ?? "-")</td>
                     <td>@(order.ShippedDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+							<td>@(order.Freight?.ToString("C") ?? "$0.00")</td>
                     <td>@CalculateTotal(order).ToString("C")</td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary"
