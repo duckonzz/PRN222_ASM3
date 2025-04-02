@@ -28,6 +28,11 @@ namespace Service.Services
             return await _memberRepository.GetByIdAsync(id);
         }
 
+        public async Task<MemberDTO> GetMemberByEmailAsync(string email)
+        {
+            return await _memberRepository.GetMemberByEmailAsync(email);
+        }
+
         public async Task<MemberDTO?> LoginAsync(string email, string password)
         {
             return await _memberRepository.LoginAsync(email, password, _adminAccountSettings);

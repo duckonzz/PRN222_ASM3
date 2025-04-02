@@ -8,6 +8,7 @@ namespace Service.Services.Interfaces
     {
         Task<List<MemberDTO>> GetAllMembersAsync();
         Task<MemberDTO> GetMemberByIdAsync(int id);
+        Task<MemberDTO> GetMemberByEmailAsync(string email);
         Task<MemberDTO?> LoginAsync(string email, string password);
         Task<bool> IsAdmin(MemberDTO member);
         Task AddMemberAsync(MemberDTO member);
