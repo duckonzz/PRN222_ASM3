@@ -94,6 +94,8 @@
         padding: 20px;
     }
 </style>
+<AuthorizeView Roles="Admin" Context="auth">
+    <Authorized>
 <div class="order-history-container">
 <h3>Order Management</h3>
 <button class="btn btn-primary mb-3" @onclick="CreateNewOrder">Create New Order</button>
@@ -112,6 +114,7 @@ else
                 <th>Order Date</th>
                 <th>Required Date</th>
                 <th>Shipped Date</th>
+                 <th>Freight</th>
                 <th>Total Amount</th>
                 <th>Actions</th>
             </tr>
@@ -125,6 +128,7 @@ else
                     <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
                     <td>@(order.RequiredDate?.ToString("yyyy-MM-dd") ?? "-")</td>
                     <td>@(order.ShippedDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+							<td>@(order.Freight?.ToString("C") ?? "$0.00")</td>
                     <td>@CalculateTotal(order).ToString("C")</td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary"
@@ -149,6 +153,12 @@ else
 
 }
 </div>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to access this page.</p>
+        <a href="/login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     private List<Order> orders;
 
