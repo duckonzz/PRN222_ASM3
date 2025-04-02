@@ -120,6 +120,9 @@
                     }
                 </div>
             </div>
+            <div class="mt-3">
+                <a href="/admin/member" class="btn btn-secondary">Back to Member Management</a>
+            </div>
         }
         else
         {
@@ -142,6 +145,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Email</th>
                                     <th>Company</th>
                                     <th>City</th>
@@ -150,9 +154,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var member in members)
+                                @foreach (var member in pagedMembers)
                                 {
                                     <tr>
+                                        <td>@member.MemberId</td>
                                         <td>@member.Email</td>
                                         <td>@member.CompanyName</td>
                                         <td>@member.City</td>
@@ -166,13 +171,17 @@
                             </tbody>
                         </table>
                     }
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-secondary btn-sm" @onclick="PreviousPage" disabled="@(!HasPreviousPage)">Previous</button>
+                            <span>Page @currentPage of @totalPages</span>
+                            <button class="btn btn-secondary btn-sm" @onclick="NextPage" disabled="@(!HasNextPage)">Next</button>
+                        </div>
                 </div>
             </div>
-        }
-
-        <div class="mt-3">
-            <a href="/admin/dashboard" class="btn btn-secondary">Back to Dashboard</a>
-        </div>
+            <div class="mt-3">
+                <a href="/admin/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        }        
     </Authorized>
     <NotAuthorized>
         <p>You are not authorized to access this page.</p>
@@ -186,6 +195,7 @@
 
     private HubConnection? hubConnection;
     private List<MemberDTO>? members;
+    private List<MemberDTO> pagedMembers = new List<MemberDTO>();
     private MemberDTO newMember = new MemberDTO();
     private MemberUpdateDTO updateMember = new MemberUpdateDTO();
     private bool showAddEditForm = false;
@@ -193,12 +203,21 @@
     private string message = string.Empty;
     private bool isError = false;
 
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private int totalMembers = 0;
+    private int totalPages => (int)Math.Ceiling(totalMembers / (double)pageSize);
+    private bool HasPreviousPage => currentPage > 1;
+    private bool HasNextPage => currentPage < totalPages;
+
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
         members = await MemberService.GetAllMembersAsync();
+        totalMembers = members.Count;
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/productcategoryhub"))
             .WithAutomaticReconnect()
@@ -209,14 +228,9 @@
             members ??= new();
             var createdMember = await MemberService.GetMemberByEmailAsync(dto.Email);
             if (createdMember != null)
-                members.Add(new MemberDTO
-                {
-                    MemberId = createdMember.MemberId,
-                    Email = dto.Email,
-                    CompanyName = dto.CompanyName,
-                    City = dto.City,
-                    Country = dto.Country
-                });
+                members.Add(createdMember);
+            totalMembers = members.Count;
+            await UpdatePagedMembers();
             InvokeAsync(StateHasChanged);
         });
 
@@ -225,14 +239,9 @@
             var index = members?.FindIndex(m => m.MemberId == dto.MemberId) ?? -1;
             if (index >= 0)
             {
-                members![index] = new MemberDTO
-                {
-                    MemberId = dto.MemberId,
-                    Email = dto.Email,
-                    CompanyName = dto.CompanyName,
-                    City = dto.City,
-                    Country = dto.Country
-                };
+                members![index] = dto;
+                totalMembers = members.Count;
+                UpdatePagedMembers();
                 InvokeAsync(StateHasChanged);
             }
         });
@@ -243,6 +252,8 @@
             if (m != null)
             {
                 members?.Remove(m);
+                totalMembers = members.Count;
+                UpdatePagedMembers();
                 InvokeAsync(StateHasChanged);
             }
         });
@@ -255,6 +266,41 @@
         catch (Exception ex)
         {
             Console.WriteLine($"SignalR for Member failed: {ex.Message}");
+        }
+        await UpdatePagedMembers();
+    }
+
+    private async Task UpdatePagedMembers()
+    {
+        // Recalculate the current page's members
+        pagedMembers = members.OrderByDescending(m => m.MemberId).Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadMembers()
+    {
+        // Fetch all members from the backend
+        members = await MemberService.GetAllMembersAsync();
+        totalMembers = members.Count;
+        // Update paged members
+        await UpdatePagedMembers();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await UpdatePagedMembers();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await UpdatePagedMembers();
         }
     }
 
@@ -300,6 +346,7 @@
             await MemberService.DeleteMemberAsync(id);
             message = "Member deleted successfully";
             isError = false;
+            await LoadMembers();
         }
         catch (Exception ex)
         {
@@ -316,6 +363,7 @@
             message = "Member added successfully";
             isError = false;
             showAddEditForm = false;
+            await LoadMembers();
         }
         catch (Exception ex)
         {
@@ -332,6 +380,7 @@
             message = "Member updated successfully";
             isError = false;
             showAddEditForm = false;
+            await LoadMembers();
         }
         catch (Exception ex)
         {
