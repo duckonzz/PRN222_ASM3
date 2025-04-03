@@ -71,7 +71,7 @@
 @code {
     private List<Product> cart = new List<Product>();
     private DateTime requiredDate = DateTime.Now.AddDays(3);
-    private string shippingAddress = "";  // This will be populated from Member data
+    private string shippingAddress = ""; 
     private bool isProcessing = false;
     private string errorMessage = "";
     private int currentMemberId = 0;
@@ -80,7 +80,7 @@
     {
         await LoadCartFromStorage();
         await GetCurrentMemberId();
-        await LoadMemberShippingAddress();  // New method to load address
+        await LoadMemberShippingAddress();  
     }
 
     private async Task GetCurrentMemberId()
