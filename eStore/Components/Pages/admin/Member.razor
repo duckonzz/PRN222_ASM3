@@ -15,9 +15,9 @@
     <Authorized>
         <h1>Member Management</h1>
 
-        <div class="alert alert-success">
-            Welcome, @auth.User.Identity?.Name!
-        </div>
+        @* <div class="alert alert-success"> *@
+        @*     Welcome, @auth.User.Identity?.Name! *@
+        @* </div> *@
 
         @if (!string.IsNullOrEmpty(message))
         {
@@ -178,9 +178,9 @@
                         </div>
                 </div>
             </div>
-            <div class="mt-3">
-                <a href="/admin/dashboard" class="btn btn-secondary">Back to Dashboard</a>
-            </div>
+            @* <div class="mt-3"> *@
+            @*     <a href="/admin/dashboard" class="btn btn-secondary">Back to Dashboard</a> *@
+            @* </div> *@
         }        
     </Authorized>
     <NotAuthorized>
@@ -189,6 +189,186 @@
     </NotAuthorized>
 </AuthorizeView>
 
+<style>
+    .admin-container {
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    /* Page header styling */
+    h1 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        font-weight: 600;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+    }
+
+    /* Welcome alert styling */
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Card styling */
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #eaeaea;
+        padding: 15px 20px;
+        border-radius: 8px 8px 0 0 !important;
+    }
+
+        .card-header h5 {
+            margin: 0;
+            color: #3498db;
+            font-weight: 600;
+        }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    /* Form styling */
+    .form-control {
+        border-radius: 6px;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        transition: border-color 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+    label {
+        font-weight: 500;
+        color: #444;
+        margin-bottom: 6px;
+    }
+
+    .validation-message {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
+
+    /* Button styling */
+    .btn-primary {
+        background-color: #3498db;
+        border-color: #3498db;
+        transition: all 0.2s;
+    }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+    .btn-secondary {
+        background-color: #95a5a6;
+        border-color: #95a5a6;
+        transition: all 0.2s;
+    }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+            border-color: #7f8c8d;
+        }
+
+    .btn-danger {
+        background-color: #e74c3c;
+        border-color: #e74c3c;
+        transition: all 0.2s;
+    }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+
+    .btn-info {
+        background-color: #2ecc71;
+        border-color: #2ecc71;
+        color: #fff;
+        transition: all 0.2s;
+    }
+
+        .btn-info:hover {
+            background-color: #27ae60;
+            border-color: #27ae60;
+            color: #fff;
+        }
+
+    /* Table styling */
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
+
+        .table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            padding: 12px 15px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+            border-top: 1px solid #eee;
+        }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    /* Pagination styling */
+    .pagination-section {
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-info {
+        color: #7f8c8d;
+        font-weight: 500;
+    }
+
+    /* Authorization section */
+    .not-authorized {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: 50px auto;
+    }
+
+        .not-authorized p {
+            color: #e74c3c;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+</style>
 @code {
 
 
