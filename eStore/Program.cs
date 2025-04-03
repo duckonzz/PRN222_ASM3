@@ -60,6 +60,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+// Add background Service
+builder.Services.AddHostedService<LowStockBackgroundService>();
 
 var app = builder.Build();
 

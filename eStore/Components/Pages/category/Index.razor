@@ -51,7 +51,7 @@
             @if (totalPages > 1)
             {
                 <div class="pagination-container">
-                    <button class="btn btn-outline-primary" 
+                    <button class="btn btn-outline-primary"
                             disabled="@(@currentPage == 1)"
                             @onclick="@(() => ChangePage(currentPage - 1))">
                         Previous
@@ -59,7 +59,7 @@
 
                     <span class="page-info">Page @currentPage of @totalPages</span>
 
-                    <button class="btn btn-outline-primary" 
+                    <button class="btn btn-outline-primary"
                             disabled="@(@currentPage == totalPages)"
                             @onclick="@(() => ChangePage(currentPage + 1))">
                         Next
@@ -95,11 +95,11 @@
         {
             categories ??= new();
             categories.Add(new Category
-            {
-                CategoryId = dto.CategoryId,
-                CategoryName = dto.CategoryName,
-                Description = dto.Description
-            });
+                {
+                    CategoryId = dto.CategoryId,
+                    CategoryName = dto.CategoryName,
+                    Description = dto.Description
+                });
 
             currentPage = 1; // Quay lại trang đầu
             InvokeAsync(StateHasChanged);
@@ -111,11 +111,11 @@
             if (index >= 0)
             {
                 categories![index] = new Category
-                {
-                    CategoryId = dto.CategoryId,
-                    CategoryName = dto.CategoryName,
-                    Description = dto.Description
-                };
+                    {
+                        CategoryId = dto.CategoryId,
+                        CategoryName = dto.CategoryName,
+                        Description = dto.Description
+                    };
                 InvokeAsync(StateHasChanged);
             }
         });

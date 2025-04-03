@@ -35,9 +35,6 @@
                                 <button type="submit" class="btn btn-primary me-2">
                                     <i class="bi bi-search"></i> Generate Report
                                 </button>
-                                <button type="button" class="btn btn-secondary" @onclick="ExportReport" disabled="@(!reportGenerated)">
-                                    <i class="bi bi-download"></i> Export
-                                </button>
                             </div>
                         </div>
                     </EditForm>
@@ -187,37 +184,5 @@
     private void ViewOrderDetails(int orderId)
     {
         Navigation.NavigateTo($"/admin/orders/{orderId}/details");
-    }
-
-    private async Task ExportReport()
-    {
-        if (!reportGenerated || !salesReport.Any())
-        {
-            await JSRuntime.InvokeVoidAsync("alert", "No data to export");
-            return;
-        }
-
-        try
-        {
-            var csv = new System.Text.StringBuilder();
-            csv.AppendLine("Order ID,Date,Customer,Amount");
-
-            foreach (var item in salesReport)
-            {
-                csv.AppendLine($"{item.OrderId},{item.OrderDate:yyyy-MM-dd},\"{item.MemberCompanyName}\",{item.TotalAmount}");
-            }
-
-            var fileName = $"sales_report_{startDate:yyyyMMdd}_to_{endDate:yyyyMMdd}.csv";
-            var fileContent = csv.ToString();
-            var fileBytes = System.Text.Encoding.UTF8.GetBytes(fileContent);
-            var base64 = Convert.ToBase64String(fileBytes);
-
-            // Use JavaScript to trigger download
-            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, "text/csv", base64);
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"Error exporting report: {ex.Message}");
-        }
     }
 }
