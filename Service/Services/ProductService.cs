@@ -75,5 +75,19 @@ namespace Service.Services
         {
             return await _repository.GetAllWithCategoryAsync();
         }
+
+        public async Task<List<LowStockAlertDTO>> GetLowStockAlertsAsync()
+        {
+            var products = await _repository.GetAllAsync();
+            return products
+                .Where(p => p.UnitsInStock < 10)
+                .Select(p => new LowStockAlertDTO
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.ProductName,
+                    UnitsInStock = p.UnitsInStock
+                })
+                .ToList();
+        }
     }
 }

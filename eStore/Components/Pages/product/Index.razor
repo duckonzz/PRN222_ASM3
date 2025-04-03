@@ -26,6 +26,21 @@
             <button class="btn btn-success" @onclick="CreateProduct">Create New</button>
         </p>
 
+        @if (lowStockAlerts.Any())
+        {
+            <div class="alert alert-warning" role="alert">
+                <strong>⚠ Low Stock Warning:</strong>
+                <ul class="mb-0">
+                    @foreach (var alert in lowStockAlerts)
+                    {
+                        <li>
+                            Product <strong>@alert.ProductName</strong> only has <strong>@alert.UnitsInStock</strong> units left.
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
         @if (filteredProducts == null)
         {
             <p><em>Loading products...</em></p>
@@ -98,6 +113,7 @@
     private int totalPages => (int)Math.Ceiling((double)(filteredProducts?.Count ?? 0) / pageSize);
     private List<Product>? products;
     private List<Product>? filteredProducts;
+    private List<LowStockAlertDTO> lowStockAlerts = new();
     private string? searchName;
     private decimal? unitPrice;
     private HubConnection? hubConnection;
@@ -107,10 +123,21 @@
         products = await ProductService.GetAllProductsWithCategoryAsync();
         filteredProducts = products;
 
+        lowStockAlerts = await ProductService.GetLowStockAlertsAsync();
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/productcategoryhub"))
             .WithAutomaticReconnect()
             .Build();
+
+        hubConnection.On<LowStockAlertDTO>("LowStockAlert", alert =>
+        {
+            if (!lowStockAlerts.Any(a => a.ProductId == alert.ProductId))
+            {
+                lowStockAlerts.Add(alert);
+                InvokeAsync(StateHasChanged);
+            }
+        });
 
         hubConnection.On<ProductSignalRDTO>("ProductCreated", async dto =>
         {
@@ -122,9 +149,10 @@
                     Weight = dto.Weight,
                     UnitPrice = dto.UnitPrice,
                     UnitsInStock = dto.UnitsInStock,
-                    Category = new Category {
-                        CategoryId = dto.CategoryId, 
-                        CategoryName = dto.CategoryName 
+                    Category = new Category
+                    {
+                        CategoryId = dto.CategoryId,
+                        CategoryName = dto.CategoryName
                     }
                 };
 
@@ -153,6 +181,23 @@
                             CategoryName = updated.CategoryName
                         }
                     };
+
+                if (updated.UnitsInStock < 10 && !lowStockAlerts.Any(a => a.ProductId == updated.ProductId))
+                {
+                    lowStockAlerts.Add(new LowStockAlertDTO
+                        {
+                            ProductId = updated.ProductId,
+                            ProductName = updated.ProductName,
+                            UnitsInStock = updated.UnitsInStock
+                        });
+                    InvokeAsync(StateHasChanged);
+                }
+
+                if (updated.UnitsInStock >= 10)
+                {
+                    lowStockAlerts.RemoveAll(a => a.ProductId == updated.ProductId);
+                    InvokeAsync(StateHasChanged);
+                }
 
                 ApplyFilter();
                 InvokeAsync(StateHasChanged);

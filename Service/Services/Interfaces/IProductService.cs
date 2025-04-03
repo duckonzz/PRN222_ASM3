@@ -1,10 +1,13 @@
 ﻿using BusinessObject.Entities;
+using DataAccess.DTO;
 
 namespace Service.Services.Interfaces
 {
     public interface IProductService
     {
         Task<List<Product>> GetAllProductsWithCategoryAsync();
+
+        Task<List<LowStockAlertDTO>> GetLowStockAlertsAsync();
 
         Task<List<Product>> GetAllProductsAsync();
 
