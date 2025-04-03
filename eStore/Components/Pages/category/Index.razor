@@ -33,7 +33,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var category in categories)
+                    @foreach (var category in GetPagedCategories())
                     {
                         <tr>
                             <td>@category.CategoryName</td>
@@ -47,6 +47,25 @@
                     }
                 </tbody>
             </table>
+
+            @if (totalPages > 1)
+            {
+                <div class="pagination-container">
+                    <button class="btn btn-outline-primary" 
+                            disabled="@(@currentPage == 1)"
+                            @onclick="@(() => ChangePage(currentPage - 1))">
+                        Previous
+                    </button>
+
+                    <span class="page-info">Page @currentPage of @totalPages</span>
+
+                    <button class="btn btn-outline-primary" 
+                            disabled="@(@currentPage == totalPages)"
+                            @onclick="@(() => ChangePage(currentPage + 1))">
+                        Next
+                    </button>
+                </div>
+            }
         }
     </Authorized>
     <NotAuthorized>
@@ -58,6 +77,10 @@
 @code {
     private List<Category>? categories;
     private HubConnection? hubConnection;
+
+    private int currentPage = 1;
+    private int pageSize = 5;
+    private int totalPages => (int)Math.Ceiling((double)(categories?.Count ?? 0) / pageSize);
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,11 +95,13 @@
         {
             categories ??= new();
             categories.Add(new Category
-                {
-                    CategoryId = dto.CategoryId,
-                    CategoryName = dto.CategoryName,
-                    Description = dto.Description
-                });
+            {
+                CategoryId = dto.CategoryId,
+                CategoryName = dto.CategoryName,
+                Description = dto.Description
+            });
+
+            currentPage = 1; // Quay lại trang đầu
             InvokeAsync(StateHasChanged);
         });
 
@@ -86,11 +111,11 @@
             if (index >= 0)
             {
                 categories![index] = new Category
-                    {
-                        CategoryId = dto.CategoryId,
-                        CategoryName = dto.CategoryName,
-                        Description = dto.Description
-                    };
+                {
+                    CategoryId = dto.CategoryId,
+                    CategoryName = dto.CategoryName,
+                    Description = dto.Description
+                };
                 InvokeAsync(StateHasChanged);
             }
         });
@@ -100,7 +125,8 @@
             var c = categories?.FirstOrDefault(c => c.CategoryId == id);
             if (c != null)
             {
-                categories?.Remove(c);
+                categories!.Remove(c);
+                if (currentPage > totalPages) currentPage = totalPages;
                 InvokeAsync(StateHasChanged);
             }
         });
@@ -121,6 +147,23 @@
         NavigationManager.NavigateTo("/categories/create");
     }
 
+    private void ChangePage(int newPage)
+    {
+        if (newPage >= 1 && newPage <= totalPages)
+        {
+            currentPage = newPage;
+            StateHasChanged();
+        }
+    }
+
+    private IEnumerable<Category> GetPagedCategories()
+    {
+        return categories?
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            ?? Enumerable.Empty<Category>();
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (hubConnection is not null)
@@ -129,3 +172,13 @@
         }
     }
 }
+
+<style>
+    .pagination-container {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        justify-content: center;
+    }
+</style>
