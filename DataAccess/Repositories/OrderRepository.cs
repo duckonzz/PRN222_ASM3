@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Entities;
 using DataAccess.Data;
@@ -14,6 +13,7 @@ namespace DataAccess.Repositories
     public class OrderRepository : IOrderRepository
     {
         private readonly eStoreDuckContext _context;
+
         public OrderRepository(eStoreDuckContext context)
         {
             _context = context;
@@ -28,15 +28,15 @@ namespace DataAccess.Repositories
         public async Task DeleteOrderAsync(int orderId)
         {
             var order = await _context.Orders
-           .Include(o => o.OrderDetails) 
-           .FirstOrDefaultAsync(o => o.OrderId == orderId);
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
             if (order != null)
             {
                 if (order.OrderDetails != null && order.OrderDetails.Any())
                 {
                     _context.OrderDetails.RemoveRange(order.OrderDetails);
-                }             
-                _context.Orders.Remove(order);              
+                }
+                _context.Orders.Remove(order);
                 await _context.SaveChangesAsync();
             }
         }
@@ -44,9 +44,9 @@ namespace DataAccess.Repositories
         public async Task<List<Order>> GetAllOrdersAsync()
         {
             return await _context.Orders
-                  .Include(o => o.OrderDetails)
-                  .Include(o => o.Member)
-                  .ToListAsync();
+                .Include(o => o.OrderDetails)
+                .Include(o => o.Member)
+                .ToListAsync();
         }
 
         public async Task<Order> GetOrderByIdAsync(int orderId)
@@ -62,6 +62,7 @@ namespace DataAccess.Repositories
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
         }
+
         public async Task<List<Order>> GetOrdersByMemberIdAsync(int memberId)
         {
             return await _context.Orders
@@ -70,6 +71,7 @@ namespace DataAccess.Repositories
                 .Where(o => o.MemberId == memberId)
                 .ToListAsync();
         }
+
         public async Task<List<SalesReportItemDTO>> GetSalesReportAsync(DateTime startDate, DateTime endDate)
         {
             var orders = await _context.Orders
@@ -78,17 +80,15 @@ namespace DataAccess.Repositories
                 .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
                 .ToListAsync();
 
-            var result = orders.Select(o => new SalesReportItemDTO
+            return orders.Select(o => new SalesReportItemDTO
             {
                 OrderId = o.OrderId,
                 OrderDate = o.OrderDate,
                 MemberCompanyName = o.Member?.CompanyName ?? "Unknown",
                 TotalAmount = o.OrderDetails.Sum(od => od.UnitPrice * od.Quantity * (1 - (decimal)od.Discount))
             })
-                .OrderByDescending(o => o.TotalAmount)
-                .ToList();
-
-            return result;
+            .OrderByDescending(o => o.TotalAmount)
+            .ToList();
         }
 
         public async Task<decimal> GetTotalSalesAsync(DateTime startDate, DateTime endDate)
