@@ -10,7 +10,6 @@
 @inject ProtectedLocalStorage LocalStorage
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ICategoryService CategoryService
-
 <div class="products-container">
     <h3>Product List</h3>
     <div style="text-align: center; margin-top: 20px;">
@@ -27,10 +26,12 @@
     else
     {
         <div class="products-grid">
-            @foreach (var product in paginatedProducts)
+            @foreach (var product in products)
             {
                 <div class="product-card">
                     <h4>@(product.ProductName ?? "N/A")</h4>
+                    <p><strong>Category:</strong> @(categoryNames.ContainsKey(product.CategoryId) ? categoryNames[product.CategoryId] : "Unknown")</p>
+
                     <p><strong>Weight:</strong> @(product.Weight ?? "N/A")</p>
                     <p class="price">@product.UnitPrice.ToString("C")</p>
                     <p><strong>In Stock:</strong> @product.UnitsInStock</p>
@@ -40,47 +41,36 @@
                 </div>
             }
         </div>
-
-        <!-- Pagination Controls -->
-        <div class="pagination">
-            <button class="btn-pagination" disabled="@(currentPage == 1)" @onclick="PreviousPage">Previous</button>
-            <span>Page @currentPage of @totalPages</span>
-            <button class="btn-pagination" disabled="@(currentPage == totalPages)" @onclick="NextPage">Next</button>
-        </div>
     }
 </div>
 
 @code {
     private List<Product> products;
-    private List<Product> paginatedProducts;
     private List<Product> cart = new List<Product>();
-    private int currentPage = 1;
-    private int pageSize = 10; // Number of products per page
-    private int totalPages => (int)Math.Ceiling((double)(products?.Count ?? 0) / pageSize);
+    private Dictionary<int, string> categoryNames = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
+        {   products = await ProductService.GetAllProductsAsync();
+
+        foreach (var product in products)
         {
-            products = new List<Product>();
-            products = await ProductService.GetAllProductsAsync();
-            UpdatePaginatedProducts();
+            if (!categoryNames.ContainsKey(product.CategoryId))
+            {
+                var categoryName = await CategoryService.GetCategoryNameAsync(product.CategoryId);
+                if (!string.IsNullOrEmpty(categoryName))
+                {
+                    categoryNames[product.CategoryId] = categoryName;
+                }
+            }
+        }
+
             await LoadCartFromStorage();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
-        }
-    }
-
-    private void UpdatePaginatedProducts()
-    {
-        if (products != null)
-        {
-            paginatedProducts = products
-                .Skip((currentPage - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
         }
     }
 
@@ -137,26 +127,6 @@
         }
     }
 
-    private void PreviousPage()
-    {
-        if (currentPage > 1)
-        {
-            currentPage--;
-            UpdatePaginatedProducts();
-            StateHasChanged();
-        }
-    }
-
-    private void NextPage()
-    {
-        if (currentPage < totalPages)
-        {
-            currentPage++;
-            UpdatePaginatedProducts();
-            StateHasChanged();
-        }
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -168,7 +138,6 @@
 }
 
 <style>
-    /* Existing styles remain unchanged */
     .products-container {
         max-width: 1500px;
         margin: 0 auto;
@@ -260,32 +229,10 @@
         padding: 20px;
     }
 
-    /* New styles for pagination */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 20px;
-        gap: 10px;
+    .message {
+        text-align: center;
+        color: #28a745;
+        font-size: 16px;
+        margin-bottom: 20px;
     }
-
-    .btn-pagination {
-        padding: 8px 16px;
-        font-size: 14px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-        .btn-pagination:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .btn-pagination:hover:not(:disabled) {
-            background-color: #0056b3;
-        }
 </style>

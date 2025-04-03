@@ -53,5 +53,10 @@ namespace DataAccess.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<Product>> GetAllWithCategoryAsync()
+        {
+            return await _context.Products.Include(p => p.Category).ToListAsync();
+        }
     }
 }

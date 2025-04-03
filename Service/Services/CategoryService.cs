@@ -66,5 +66,9 @@ namespace Service.Services
                 Description = category.Description
             });
         }
+        public async Task<string?> GetCategoryNameAsync(int categoryId)
+        {
+            return await _repository.GetCategoryNameByIdAsync(categoryId);
+        }
     }
 }

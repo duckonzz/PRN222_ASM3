@@ -51,5 +51,19 @@ namespace Service.Services
         {
             return await _orderRepository.GetOrdersByMemberIdAsync(memberId);
         }
+        public async Task<List<SalesReportItemDTO>> GetSalesReportAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _orderRepository.GetSalesReportAsync(startDate, endDate);
+        }
+
+        public async Task<decimal> GetTotalSalesAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _orderRepository.GetTotalSalesAsync(startDate, endDate);
+        }
+
+        public async Task<int> GetTotalOrdersAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _orderRepository.GetTotalOrdersAsync(startDate, endDate);
+        }
     }
 }
