@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Entities;
 using DataAccess.Data;
+using DataAccess.DTO;
 using DataAccess.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,6 +69,43 @@ namespace DataAccess.Repositories
                 .Include(o => o.Member)
                 .Where(o => o.MemberId == memberId)
                 .ToListAsync();
+        }
+        public async Task<List<SalesReportItemDTO>> GetSalesReportAsync(DateTime startDate, DateTime endDate)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .Include(o => o.Member)
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .ToListAsync();
+
+            var result = orders.Select(o => new SalesReportItemDTO
+            {
+                OrderId = o.OrderId,
+                OrderDate = o.OrderDate,
+                MemberCompanyName = o.Member?.CompanyName ?? "Unknown",
+                TotalAmount = o.OrderDetails.Sum(od => od.UnitPrice * od.Quantity * (1 - (decimal)od.Discount))
+            })
+                .OrderByDescending(o => o.TotalAmount)
+                .ToList();
+
+            return result;
+        }
+
+        public async Task<decimal> GetTotalSalesAsync(DateTime startDate, DateTime endDate)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .ToListAsync();
+
+            return orders.Sum(o => o.OrderDetails.Sum(od => od.UnitPrice * od.Quantity * (1 - (decimal)od.Discount)));
+        }
+
+        public async Task<int> GetTotalOrdersAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Orders
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .CountAsync();
         }
     }
 }
