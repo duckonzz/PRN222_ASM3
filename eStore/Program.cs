@@ -11,6 +11,7 @@ using eStore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using DataAccess.DTO;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,25 @@ builder.Services.AddAuthentication(options =>
         options.AccessDeniedPath = "/";
         options.SlidingExpiration = true;
     });
+// Configure Redis
+var redisSection = builder.Configuration.GetSection("Redis");
+var redisHost = redisSection["Host"];
+var redisPort = redisSection.GetValue<int>("Port");
+var redisPassword = redisSection["Password"];
+var redisSsl = redisSection.GetValue<bool>("Ssl");
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var options = new ConfigurationOptions
+    {
+        EndPoints = { "redis-16450.c100.us-east-1-4.ec2.redns.redis-cloud.com:16450" },
+        Password = "qvxs5CMKOSt41Fp4J3tBoVDl7TLHpwgT",
+        Ssl = false,
+        AbortOnConnectFail = false
+    };
+    return ConnectionMultiplexer.Connect(options);
+});
+
 // Configure Distributed Cache (for session persistence across SignalR connections)
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();

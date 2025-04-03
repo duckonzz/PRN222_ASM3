@@ -13,6 +13,9 @@ namespace Service.Services.Interfaces
         Task UpdateCategoryAsync(Category category);
 
         Task DeleteCategoryAsync(int id);
+
         Task<string?> GetCategoryNameAsync(int categoryId);
+
+        Task RefreshCacheAsync();
     }
 }
