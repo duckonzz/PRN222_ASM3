@@ -29,7 +29,7 @@
                     <table class="items-table">
                         <thead>
                             <tr>
-                                <th>Product</th> <!-- Changed from Product ID to Product -->
+                                <th>Product</th> 
                                 <th>Price</th>
                                 <th>Quantity</th>
                                 <th>Total</th>
@@ -39,7 +39,7 @@
                             @foreach (var item in orderDetails)
                             {
                                 <tr>
-                                    <td>@item.Product.ProductName</td> <!-- Display ProductName -->
+                                    <td>@item.Product.ProductName</td>
                                     <td>@item.UnitPrice.ToString("C")</td>
                                     <td>@item.Quantity</td>
                                     <td>@((item.UnitPrice * item.Quantity).ToString("C"))</td>
