@@ -4,7 +4,6 @@
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-
 <PageTitle>Product List</PageTitle>
 
 <AuthorizeView Roles="Admin" Context="auth">
@@ -16,7 +15,7 @@
                 <InputText class="form-control" placeholder="Search name..." @bind-Value="searchName" />
             </div>
             <div class="col-md-3">
-                <InputNumber class="form-control" placeholder="Unit Price..." @bind-Value="UnitPrice" />
+                <InputNumber class="form-control" placeholder="Unit Price..." @bind-Value="unitPrice" />
             </div>
             <div class="col-md-2">
                 <button class="btn btn-primary w-100" @onclick="ApplyFilter">Search</button>
@@ -53,7 +52,7 @@
                     {
                         <tr>
                             <td>@product.ProductName</td>
-                            <td>@product.Category.CategoryName</td>
+                            <td>@product.Category?.CategoryName</td>
                             <td>@product.Weight</td>
                             <td>@product.UnitPrice</td>
                             <td>@product.UnitsInStock</td>
@@ -74,17 +73,16 @@
     </NotAuthorized>
 </AuthorizeView>
 
-@code
-{
+@code {
     private List<Product>? products;
     private List<Product>? filteredProducts;
     private string? searchName;
-    private decimal? UnitPrice;
+    private decimal? unitPrice;
     private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
-        products = await ProductService.GetAllProductsAsync();
+        products = await ProductService.GetAllProductsWithCategoryAsync();
         filteredProducts = products;
 
         hubConnection = new HubConnectionBuilder()
@@ -92,39 +90,46 @@
             .WithAutomaticReconnect()
             .Build();
 
-        hubConnection.On<ProductSignalRDTO>("ProductCreated", dto =>
+        hubConnection.On<ProductSignalRDTO>("ProductCreated", async dto =>
         {
-            Console.WriteLine("Received ProductCreated SignalR event!");
-
-            if (products == null) products = new List<Product>();
-
-            products?.Add(new Product
+            var newProduct = new Product
                 {
                     ProductId = dto.ProductId,
                     ProductName = dto.ProductName,
                     CategoryId = dto.CategoryId,
                     Weight = dto.Weight,
                     UnitPrice = dto.UnitPrice,
-                    UnitsInStock = dto.UnitsInStock
-                });
+                    UnitsInStock = dto.UnitsInStock,
+                    Category = new Category {
+                        CategoryId = dto.CategoryId, 
+                        CategoryName = dto.CategoryName 
+                    }
+                };
+
+            products ??= new List<Product>();
+            products.Add(newProduct);
             ApplyFilter();
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         });
 
-
-        hubConnection.On<Product>("ProductUpdated", dto =>
+        hubConnection.On<ProductSignalRDTO>("ProductUpdated", updated =>
         {
-            var index = products?.FindIndex(p => p.ProductId == dto.ProductId) ?? -1;
+            var index = products?.FindIndex(p => p.ProductId == updated.ProductId) ?? -1;
             if (index >= 0)
             {
                 products![index] = new Product
                     {
-                        ProductId = dto.ProductId,
-                        ProductName = dto.ProductName,
-                        CategoryId = dto.CategoryId,
-                        Weight = dto.Weight,
-                        UnitPrice = dto.UnitPrice,
-                        UnitsInStock = dto.UnitsInStock
+                        ProductId = updated.ProductId,
+                        ProductName = updated.ProductName,
+                        CategoryId = updated.CategoryId,
+                        Weight = updated.Weight,
+                        UnitPrice = updated.UnitPrice,
+                        UnitsInStock = updated.UnitsInStock,
+                        Category = new Category
+                        {
+                            CategoryId = updated.CategoryId,
+                            CategoryName = updated.CategoryName
+                        }
                     };
 
                 ApplyFilter();
@@ -134,10 +139,10 @@
 
         hubConnection.On<int>("ProductDeleted", id =>
         {
-            var p = products?.FirstOrDefault(p => p.ProductId == id);
-            if (p != null)
+            var product = products?.FirstOrDefault(p => p.ProductId == id);
+            if (product != null)
             {
-                products?.Remove(p);
+                products!.Remove(product);
                 ApplyFilter();
                 InvokeAsync(StateHasChanged);
             }
@@ -165,7 +170,7 @@
 
         filteredProducts = products.Where(p =>
             (string.IsNullOrWhiteSpace(searchName) || p.ProductName.Contains(searchName, StringComparison.OrdinalIgnoreCase)) &&
-            (!UnitPrice.HasValue || p.UnitPrice <= UnitPrice.Value)
+            (!unitPrice.HasValue || p.UnitPrice <= unitPrice.Value)
         ).ToList();
     }
 

@@ -4,6 +4,8 @@ namespace Service.Services.Interfaces
 {
     public interface IProductService
     {
+        Task<List<Product>> GetAllProductsWithCategoryAsync();
+
         Task<List<Product>> GetAllProductsAsync();
 
         Task<Product?> GetProductByIdAsync(int id);
