@@ -12,10 +12,9 @@ namespace Service.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<LowStockBackgroundService> _logger;
         private readonly IHubContext<ProductCategoryHub> _hubContext;
-        private const int Threshold = 10; // tồn kho cảnh báo
-        private const int DelayInMinutes = 1; // tần suất kiểm tra
+        private const int Threshold = 10;
+        private const int DelayInMinutes = 1; 
 
-        // Để tránh spam nhiều lần
         private readonly HashSet<int> _alertedProductIds = new();
 
         public LowStockBackgroundService(
@@ -60,7 +59,7 @@ namespace Service.Services
                         }
                     }
 
-                    // Cleanup: nếu sản phẩm đã được bổ sung lại, xóa khỏi danh sách đã alert
+                    // nếu sản phẩm đã được bổ sung lại, xóa khỏi danh sách đã alert
                     var replenishedIds = _alertedProductIds
                         .Where(id => products.FirstOrDefault(p => p.ProductId == id)?.UnitsInStock >= Threshold)
                         .ToList();
