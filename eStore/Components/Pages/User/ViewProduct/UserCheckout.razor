@@ -27,7 +27,7 @@
         <div class="checkout-summary">
             <h4>Order Summary</h4>
             <p>Total Items: @cart.Count</p>
-            <p>Total: @cart.Sum(p => p.UnitPrice).ToString("C")</p>
+            <p>Total: @(cart.GroupBy(p => p.ProductId).Sum(g => g.First().UnitPrice * g.Count()).ToString("C"))</p>
             @* <p>Shipping: $5.00</p> *@
             @* <p><strong>Grand Total: @(cart.Sum(p => p.UnitPrice) + 5)</strong></p> *@
         </div>
@@ -126,7 +126,7 @@
                 var member = await MemberService.GetMemberByIdAsync(currentMemberId);
                 if (member != null)
                 {
-                    shippingAddress = $"{member.Country}, {member.City}";  // Combine Country and City
+                    shippingAddress = $"{member.Country}, {member.City}";  
                 }
                 else
                 {
@@ -162,6 +162,72 @@
         }
     }
 
+    // private async Task PlaceOrder()
+    // {
+    //     if (string.IsNullOrWhiteSpace(shippingAddress))
+    //     {
+    //         errorMessage = "Please provide a shipping address.";
+    //         return;
+    //     }
+
+    //     if (currentMemberId <= 0)
+    //     {
+    //         errorMessage = "You must be logged in to place an order.";
+    //         return;
+    //     }
+
+    //     isProcessing = true;
+    //     errorMessage = "";
+
+    //     try
+    //     {
+    //         var order = new Order
+    //         {
+    //             MemberId = currentMemberId,
+    //             OrderDate = DateTime.Now,
+    //             ShippedDate = requiredDate,
+    //                 RequiredDate = requiredDate,
+
+    //         };
+
+    //         await OrderService.AddOrderAsync(order);
+
+    //         var memberOrders = await OrderService.GetOrdersByMemberIdAsync(currentMemberId);
+    //         var createdOrder = memberOrders
+    //             .OrderByDescending(o => o.OrderDate)
+    //             .FirstOrDefault();
+
+    //         if (createdOrder != null)
+    //         {
+    //             foreach (var item in cart)
+    //             {
+    //                 var orderDetail = new OrderDetail
+    //                 {
+    //                     OrderId = createdOrder.OrderId,
+    //                     ProductId = item.ProductId,
+    //                     UnitPrice = item.UnitPrice,
+    //                     Quantity = 1,
+    //                     Discount = 0.0
+    //                 };
+    //                 await OrderDetailService.AddOrderDetailAsync(orderDetail);
+    //             }
+
+    //             await LocalStorage.DeleteAsync("ShoppingCart");
+    //             Navigation.NavigateTo($"/order-confirmation/{createdOrder.OrderId}");
+    //         }
+    //         else
+    //         {
+    //             errorMessage = "Failed to create the order. Please try again.";
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Error placing order: {ex.Message}");
+    //         errorMessage = "An error occurred while placing your order. Please try again.";
+    //     }
+
+    //     isProcessing = false;
+    // }
     private async Task PlaceOrder()
     {
         if (string.IsNullOrWhiteSpace(shippingAddress))
@@ -181,51 +247,40 @@
 
         try
         {
+          
             var order = new Order
-            {
-                MemberId = currentMemberId,
-                OrderDate = DateTime.Now,
-                ShippedDate = requiredDate,
+                {
+                    MemberId = currentMemberId,
+                    OrderDate = DateTime.Now,
+                    ShippedDate = requiredDate, 
                     RequiredDate = requiredDate,
-            };
+                    OrderDetails = cart
+                        .GroupBy(p => p.ProductId) 
+                        .Select(g => new OrderDetail
+                        {
+                            ProductId = g.Key,
+                            UnitPrice = g.First().UnitPrice,
+                            Quantity = g.Count(),
+                            Discount = 0.0
+                        }).ToList()
+                };
 
+          
             await OrderService.AddOrderAsync(order);
 
-            var memberOrders = await OrderService.GetOrdersByMemberIdAsync(currentMemberId);
-            var createdOrder = memberOrders
-                .OrderByDescending(o => o.OrderDate)
-                .FirstOrDefault();
-
-            if (createdOrder != null)
-            {
-                foreach (var item in cart)
-                {
-                    var orderDetail = new OrderDetail
-                    {
-                        OrderId = createdOrder.OrderId,
-                        ProductId = item.ProductId,
-                        UnitPrice = item.UnitPrice,
-                        Quantity = 1,
-                        Discount = 0.0
-                    };
-                    await OrderDetailService.AddOrderDetailAsync(orderDetail);
-                }
-
-                await LocalStorage.DeleteAsync("ShoppingCart");
-                Navigation.NavigateTo($"/order-confirmation/{createdOrder.OrderId}");
-            }
-            else
-            {
-                errorMessage = "Failed to create the order. Please try again.";
-            }
+           
+            await LocalStorage.DeleteAsync("ShoppingCart");
+            Navigation.NavigateTo($"/order-confirmation/{order.OrderId}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error placing order: {ex.Message}");
-            errorMessage = "An error occurred while placing your order. Please try again.";
+            errorMessage = ex.Message; 
         }
-
-        isProcessing = false;
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private void GoToCart()
@@ -238,12 +293,7 @@
         Navigation.NavigateTo("/user/products");
     }
 
-    private class UserSession
-    {
-        public string Email { get; set; }
-        public string Role { get; set; }
-        public int MemberId { get; set; }
-    }
+   
 }
 
 <style>
