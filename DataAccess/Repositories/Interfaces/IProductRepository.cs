@@ -15,5 +15,6 @@ namespace DataAccess.Repositories.Interfaces
         Task UpdateAsync(Product product);
 
         Task DeleteAsync(int id);
+
     }
 }

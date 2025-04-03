@@ -30,7 +30,8 @@
             {
                 <div class="product-card">
                     <h4>@(product.ProductName ?? "N/A")</h4>
-                    @* <p><strong>Category ID:</strong> @product?.Category?.CategoryName</p> *@
+                    <p><strong>Category:</strong> @(categoryNames.ContainsKey(product.CategoryId) ? categoryNames[product.CategoryId] : "Unknown")</p>
+
                     <p><strong>Weight:</strong> @(product.Weight ?? "N/A")</p>
                     <p class="price">@product.UnitPrice.ToString("C")</p>
                     <p><strong>In Stock:</strong> @product.UnitsInStock</p>
@@ -46,14 +47,25 @@
 @code {
     private List<Product> products;
     private List<Product> cart = new List<Product>();
-    private Dictionary<int, string> categoryNames = new Dictionary<int, string>(); 
+    private Dictionary<int, string> categoryNames = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
+        {   products = await ProductService.GetAllProductsAsync();
+
+        foreach (var product in products)
         {
-            products = new List<Product>();
-            products = await ProductService.GetAllProductsAsync();
+            if (!categoryNames.ContainsKey(product.CategoryId))
+            {
+                var categoryName = await CategoryService.GetCategoryNameAsync(product.CategoryId);
+                if (!string.IsNullOrEmpty(categoryName))
+                {
+                    categoryNames[product.CategoryId] = categoryName;
+                }
+            }
+        }
+
             await LoadCartFromStorage();
         }
         catch (Exception ex)

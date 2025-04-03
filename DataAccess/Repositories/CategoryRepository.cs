@@ -39,5 +39,12 @@ namespace DataAccess.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<string?> GetCategoryNameByIdAsync(int categoryId)
+        {
+            return await _context.Categories
+                .Where(c => c.CategoryId == categoryId)
+                .Select(c => c.CategoryName)
+                .FirstOrDefaultAsync();
+        }
     }
 }
