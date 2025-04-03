@@ -6,6 +6,8 @@ namespace DataAccess.Repositories.Interfaces
     {
         Task<List<Product>> GetAllAsync();
 
+        Task<List<Product>> GetAllWithCategoryAsync();
+
         Task<Product> GetByIdAsync(int id);
 
         Task AddAsync(Product product);

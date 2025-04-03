@@ -9,22 +9,28 @@ namespace Service.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _repository;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly IHubContext<ProductCategoryHub> _hub;
 
-        public ProductService(IProductRepository repository, IHubContext<ProductCategoryHub> hub)
+        public ProductService(IProductRepository repository, ICategoryRepository categoryRepository, IHubContext<ProductCategoryHub> hub)
         {
             _repository = repository;
+            _categoryRepository = categoryRepository;
             _hub = hub;
         }
 
         public async Task AddProductAsync(Product product)
         {
             await _repository.AddAsync(product);
+
+            var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
+
             await _hub.Clients.All.SendAsync("ProductCreated", new ProductSignalRDTO
             {
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 CategoryId = product.CategoryId,
+                CategoryName = category?.CategoryName,
                 Weight = product.Weight,
                 UnitPrice = product.UnitPrice,
                 UnitsInStock = product.UnitsInStock
@@ -50,15 +56,24 @@ namespace Service.Services
         public async Task UpdateProductAsync(Product product)
         {
             await _repository.UpdateAsync(product);
+
+            var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
+
             await _hub.Clients.All.SendAsync("ProductUpdated", new ProductSignalRDTO
             {
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 CategoryId = product.CategoryId,
+                CategoryName = category?.CategoryName,
                 Weight = product.Weight,
                 UnitPrice = product.UnitPrice,
                 UnitsInStock = product.UnitsInStock
             });
+        }
+
+        public async Task<List<Product>> GetAllProductsWithCategoryAsync()
+        {
+            return await _repository.GetAllWithCategoryAsync();
         }
     }
 }
