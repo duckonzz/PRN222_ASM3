@@ -28,8 +28,8 @@
 
         @if (lowStockAlerts.Any())
         {
-            <div class="alert alert-warning" role="alert">
-                <strong>⚠ Low Stock Warning:</strong>
+            <div class="alert alert-danger" role="alert">
+                <strong>🚨 Low Stock Warning:</strong>
                 <ul class="mb-0">
                     @foreach (var alert in lowStockAlerts)
                     {
