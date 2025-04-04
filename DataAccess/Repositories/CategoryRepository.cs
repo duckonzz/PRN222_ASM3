@@ -27,17 +27,17 @@ namespace DataAccess.Repositories
 
         public async Task UpdateAsync(Category category)
         {
-            var existing = await _context.Categories.AsNoTracking()
+            var existing = await _context.Categories
                 .FirstOrDefaultAsync(c => c.CategoryId == category.CategoryId);
 
             if (existing != null)
             {
-                _context.Categories.Update(category);
+                existing.CategoryName = category.CategoryName;
+                existing.Description = category.Description;
+
                 await _context.SaveChangesAsync();
             }
         }
-
-
 
         public async Task DeleteAsync(int id)
         {
