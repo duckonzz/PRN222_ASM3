@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Service.Services.Interfaces;
 using DataAccess.DTO;
+using BusinessObject.Entities;
 
 namespace Service.Services
 {
@@ -13,9 +14,9 @@ namespace Service.Services
         private readonly ILogger<LowStockBackgroundService> _logger;
         private readonly IHubContext<ProductCategoryHub> _hubContext;
         private const int Threshold = 10;
-        private const int DelayInMinutes = 1; 
+        private const int DelayInSeconds = 30;
 
-        private readonly HashSet<int> _alertedProductIds = new();
+        private readonly Dictionary<int, int> _lastAlertStocks = new();
 
         public LowStockBackgroundService(
             IServiceProvider serviceProvider,
@@ -43,39 +44,54 @@ namespace Service.Services
 
                     foreach (var product in lowStockProducts)
                     {
-                        if (!_alertedProductIds.Contains(product.ProductId))
+                        if (!_lastAlertStocks.ContainsKey(product.ProductId))
                         {
-                            var dto = new LowStockAlertDTO
+                            await SendAlert(product);
+                        }
+                        else
+                        {
+                            int lastStock = _lastAlertStocks[product.ProductId];
+                            if (product.UnitsInStock < lastStock)
                             {
-                                ProductId = product.ProductId,
-                                ProductName = product.ProductName,
-                                UnitsInStock = product.UnitsInStock
-                            };
-
-                            await _hubContext.Clients.All.SendAsync("LowStockAlert", dto, stoppingToken);
-
-                            _logger.LogWarning($"LOW STOCK ALERT: {dto.ProductName} ({dto.UnitsInStock} units left)");
-                            _alertedProductIds.Add(dto.ProductId);
+                                // update alert
+                                await SendAlert(product);
+                            }
                         }
                     }
 
-                    // nếu sản phẩm đã được bổ sung lại, xóa khỏi danh sách đã alert
-                    var replenishedIds = _alertedProductIds
-                        .Where(id => products.FirstOrDefault(p => p.ProductId == id)?.UnitsInStock >= Threshold)
+                    var replenishedIds = _lastAlertStocks
+                        .Where(kvp => products.FirstOrDefault(p => p.ProductId == kvp.Key)?.UnitsInStock >= Threshold)
+                        .Select(kvp => kvp.Key)
                         .ToList();
 
                     foreach (var id in replenishedIds)
                     {
-                        _alertedProductIds.Remove(id);
+                        _lastAlertStocks.Remove(id);
+                        _logger.LogInformation($"Stock replenished: Product ID {id} removed from low stock alerts.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred while checking for low stock products");
+                    _logger.LogError(ex, "Error occurred while checking for low stock products.");
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(DelayInMinutes), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(DelayInSeconds), stoppingToken);
             }
+        }
+
+        private async Task SendAlert(Product product)
+        {
+            var dto = new LowStockAlertDTO
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                UnitsInStock = product.UnitsInStock
+            };
+
+            await _hubContext.Clients.All.SendAsync("LowStockAlert", dto);
+            _logger.LogWarning($"LOW STOCK ALERT: {dto.ProductName} ({dto.UnitsInStock} units left)");
+
+            _lastAlertStocks[product.ProductId] = product.UnitsInStock;
         }
     }
 }

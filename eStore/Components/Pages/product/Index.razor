@@ -33,8 +33,11 @@
                 <ul class="mb-0">
                     @foreach (var alert in lowStockAlerts)
                     {
-                        <li>
-                            Product <strong>@alert.ProductName</strong> only has <strong>@alert.UnitsInStock</strong> units left.
+                        <li class="mb-1">
+                            Product <strong>@alert.ProductName</strong> only has
+                            <strong class="@GetStockClass(alert.UnitsInStock)">
+                                @alert.UnitsInStock
+                            </strong> units left.
                         </li>
                     }
                 </ul>
@@ -132,11 +135,20 @@
 
         hubConnection.On<LowStockAlertDTO>("LowStockAlert", alert =>
         {
-            if (!lowStockAlerts.Any(a => a.ProductId == alert.ProductId))
+            var existing = lowStockAlerts.FirstOrDefault(a => a.ProductId == alert.ProductId);
+
+            if (existing != null)
+            {
+                // Update UnitsInStock nếu giảm
+                if (alert.UnitsInStock < existing.UnitsInStock)
+                    existing.UnitsInStock = alert.UnitsInStock;
+            }
+            else
             {
                 lowStockAlerts.Add(alert);
-                InvokeAsync(StateHasChanged);
             }
+
+            InvokeAsync(StateHasChanged);
         });
 
         hubConnection.On<ProductSignalRDTO>("ProductCreated", async dto =>
@@ -163,46 +175,27 @@
         });
 
         hubConnection.On<ProductSignalRDTO>("ProductUpdated", updated =>
+    {
+        var existing = products?.FirstOrDefault(p => p.ProductId == updated.ProductId);
+        if (existing != null)
         {
-            var index = products?.FindIndex(p => p.ProductId == updated.ProductId) ?? -1;
-            if (index >= 0)
-            {
-                products![index] = new Product
-                    {
-                        ProductId = updated.ProductId,
-                        ProductName = updated.ProductName,
-                        CategoryId = updated.CategoryId,
-                        Weight = updated.Weight,
-                        UnitPrice = updated.UnitPrice,
-                        UnitsInStock = updated.UnitsInStock,
-                        Category = new Category
-                        {
-                            CategoryId = updated.CategoryId,
-                            CategoryName = updated.CategoryName
-                        }
-                    };
+            existing.ProductName = updated.ProductName;
+            existing.CategoryId = updated.CategoryId;
+            existing.Weight = updated.Weight;
+            existing.UnitPrice = updated.UnitPrice;
+            existing.UnitsInStock = updated.UnitsInStock;
 
-                if (updated.UnitsInStock < 10 && !lowStockAlerts.Any(a => a.ProductId == updated.ProductId))
-                {
-                    lowStockAlerts.Add(new LowStockAlertDTO
-                        {
-                            ProductId = updated.ProductId,
-                            ProductName = updated.ProductName,
-                            UnitsInStock = updated.UnitsInStock
-                        });
-                    InvokeAsync(StateHasChanged);
-                }
+            if (existing.Category == null)
+                existing.Category = new Category();
 
-                if (updated.UnitsInStock >= 10)
-                {
-                    lowStockAlerts.RemoveAll(a => a.ProductId == updated.ProductId);
-                    InvokeAsync(StateHasChanged);
-                }
+            existing.Category.CategoryId = updated.CategoryId;
+            existing.Category.CategoryName = updated.CategoryName;
 
-                ApplyFilter();
-                InvokeAsync(StateHasChanged);
-            }
-        });
+            ApplyFilter();
+            InvokeAsync(StateHasChanged);
+        }
+    });
+
 
         hubConnection.On<int>("ProductDeleted", id =>
         {
@@ -267,8 +260,19 @@
             await hubConnection.DisposeAsync();
         }
     }
+
+    private string GetStockClass(int stock) =>
+    stock < 5 ? "text-danger fw-bold" :
+    stock < 8 ? "text-warning" :
+    "text-body";
 }
 
 <style>
-   
-    </style>
+    .pagination-container {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        justify-content: center;
+    }
+</style>
