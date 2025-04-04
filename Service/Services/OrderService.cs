@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BusinessObject.Entities;
 using DataAccess.DTO;
+using DataAccess.Repositories;
 using DataAccess.Repositories.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Service.Services.Interfaces;
@@ -13,17 +14,20 @@ namespace Service.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly IProductRepository _productRepository;
         private readonly IHubContext<ProductCategoryHub> _hub;
 
         public OrderService(
             IOrderRepository orderRepository,
-            IProductRepository productRepository,
-            IHubContext<ProductCategoryHub> hub)
+            IProductRepository productRepository    ,
+            IHubContext<ProductCategoryHub> hub,
+            ICategoryRepository categoryRepository)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _hub = hub;
+            _categoryRepository = categoryRepository;
         }
 
         public async Task<List<Order>> GetAllOrdersAsync()
@@ -58,17 +62,16 @@ namespace Service.Services
                     product.UnitsInStock -= detail.Quantity;
                     await _productRepository.UpdateAsync(product);
 
-                    
-                    await _hub.Clients.All.SendAsync("StockUpdated", new ProductSignalRDTO
+
+                    await _hub.Clients.All.SendAsync("ProductUpdated", new ProductSignalRDTO
                     {
                         ProductId = product.ProductId,
                         ProductName = product.ProductName,
                         CategoryId = product.CategoryId,
-                        CategoryName = (await _productRepository.GetAllWithCategoryAsync())
-                            .FirstOrDefault(p => p.ProductId == product.ProductId)?.Category?.CategoryName,
-                        Weight = product.Weight,
                         UnitPrice = product.UnitPrice,
-                        UnitsInStock = product.UnitsInStock
+                        Weight = product.Weight,
+                        UnitsInStock = product.UnitsInStock,
+                        CategoryName = await _categoryRepository.GetCategoryNameByIdAsync(product.CategoryId)
                     });
                 }
             }
